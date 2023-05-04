@@ -35,6 +35,8 @@ func main() {
 	c := initConfig(yaml)
 	defer c.CloseClient()
 
+	initLogger(c)
+
 	exitSignal := make(chan os.Signal, 1)
 	signal.Notify(exitSignal, syscall.SIGINT, syscall.SIGTERM)
 	<-exitSignal

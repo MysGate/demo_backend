@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
+	"strings"
 
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum/common"
@@ -27,30 +28,49 @@ type Service struct {
 }
 
 type Chain struct {
-	RpcUrl          string `yaml:"rpc_url"`
-	PrivateKey      string `yaml:"private_key"`
-	Key             *ecdsa.PrivateKey
-	ChainID         *big.Int
-	Value           *big.Int
-	GasLimit        uint64
-	GasSuggest      *big.Int
-	ContractAddress string `yaml:"contract_address"`
-	Addr            common.Address
-	Client          *ethclient.Client
+	RpcUrl              string `yaml:"rpc_url"`
+	PrivateKey          string `yaml:"private_key"`
+	Key                 *ecdsa.PrivateKey
+	ChainID             uint64 `yaml:"chain_id"`
+	Value               *big.Int
+	GasLimit            uint64
+	GasSuggest          *big.Int
+	SrcContractAddress  string `yaml:"src_contract_address"`
+	DestContractAddress string `yaml:"dest_contract_address"`
+	SrcAddr             common.Address
+	DestAddr            common.Address
+	Client              *ethclient.Client
+	Name                string `yaml:"name"`
 }
 
 type CrossChain struct {
-	Name      string `yaml:"name"`
-	SrcChain  *Chain `yaml:"src_chain"`
-	DestChain *Chain `yaml:"dest_chain"`
+	SrcChainId  uint64 `yaml:"src_chain_id"`
+	DestChainId uint64 `yaml:"dest_chain_id"`
+}
+
+type CrossChainFee struct {
+	Name      string  `yaml:"name"`
+	Fixed     float64 `yaml:"fixed"`
+	FloatRate float64 `yaml:"float_rate"`
+}
+
+type CrossChainCoin struct {
+	Name     string `yaml:"name"`
+	CoinType string `yaml:"type"`
 }
 
 type MysGateConfig struct {
-	ChainMap map[string]*CrossChain
-	Chains   []*CrossChain `yaml:"cross_chains"`
-	Service  *Service      `yaml:"service_port"`
-	Logger   *Log          `yaml:"log"`
-	Debug    bool          `yaml:"debug"`
+	SupportChains     map[uint64]*Chain
+	SupportCrossChain map[uint64]uint64
+	Fee               map[string]*CrossChainFee
+	Coins             map[string]*CrossChainCoin
+	CrossChainCoins   []*CrossChainCoin `yaml:"cross_chain_coins"`
+	Crosschainfee     []*CrossChainFee  `yaml:"cross_chain_fees"`
+	Chains            []*Chain          `yaml:"chains"`
+	Crosschains       []*CrossChain     `yaml:"cross_chains"`
+	Service           *Service          `yaml:"service"`
+	Logger            *Log              `yaml:"log"`
+	Debug             bool              `yaml:"debug"`
 }
 
 func GetConfig() *MysGateConfig {
@@ -67,22 +87,37 @@ func initChain(s *Chain) {
 	}
 
 	s.Key = privateKey
-	s.Addr = common.HexToAddress(s.ContractAddress)
+	s.SrcAddr = common.HexToAddress(s.SrcContractAddress)
+	s.DestAddr = common.HexToAddress(s.DestContractAddress)
 }
 
 func (c *MysGateConfig) initConfig() {
-	c.ChainMap = make(map[string]*CrossChain)
+	c.SupportChains = make(map[uint64]*Chain)
+	c.SupportCrossChain = make(map[uint64]uint64)
+	c.Fee = make(map[string]*CrossChainFee)
+	c.Coins = make(map[string]*CrossChainCoin)
 
 	for _, s := range c.Chains {
-		initChain(s.SrcChain)
-		initChain(s.DestChain)
+		initChain(s)
 
-		c.ChainMap[s.Name] = s
+		c.SupportChains[s.ChainID] = s
+	}
+
+	for _, cc := range c.Crosschains {
+		c.SupportCrossChain[cc.SrcChainId] = cc.DestChainId
+	}
+
+	for _, ccf := range c.Crosschainfee {
+		c.Fee[strings.ToLower(ccf.Name)] = ccf
+	}
+
+	for _, ccc := range c.CrossChainCoins {
+		c.Coins[strings.ToLower(ccc.Name)] = ccc
 	}
 }
 
-func (c *MysGateConfig) findCrossChain(k string) *CrossChain {
-	if v, ok := c.ChainMap[k]; ok {
+func (c *MysGateConfig) findCrossChain(cid uint64) *Chain {
+	if v, ok := c.SupportChains[cid]; ok {
 		return v
 	}
 
@@ -96,15 +131,6 @@ func (c *MysGateConfig) initEthClient(cc *Chain) error {
 		util.Logger().Error(errMsg)
 		return err
 	}
-
-	id, err := conn.ChainID(context.Background())
-	if err != nil {
-		errMsg := fmt.Sprintf("get chain id err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	cc.ChainID = id
 
 	value := big.NewInt(1000000000000000000) // in wei (1 eth)
 	gasLimit := uint64(30000000)             // in units
@@ -123,34 +149,43 @@ func (c *MysGateConfig) initEthClient(cc *Chain) error {
 	return nil
 }
 
-func (c *MysGateConfig) getEthClient(k string) (*ethclient.Client, *ethclient.Client) {
-	cc := c.findCrossChain(k)
+func (c *MysGateConfig) GetEthClient(cid uint64) *ethclient.Client {
+	cc := c.findCrossChain(cid)
 	if cc == nil {
 		util.Logger().Error("Dial err")
-		return nil, nil
+		return nil
 	}
 
-	err := c.initEthClient(cc.SrcChain)
+	err := c.initEthClient(cc)
 	if err != nil {
 		errMsg := fmt.Sprintf("getEthClient src err:", err)
 		util.Logger().Error(errMsg)
-		return nil, nil
+		return nil
 	}
 
-	err = c.initEthClient(cc.DestChain)
-	if err != nil {
-		errMsg := fmt.Sprintf("getEthClient dest err:", err)
-		util.Logger().Error(errMsg)
-		return nil, nil
+	return cc.Client
+}
+
+func (c *MysGateConfig) GetCrossChainFee(coin string) *CrossChainFee {
+	lc := strings.ToLower(coin)
+	token, ok := c.Coins[lc]
+	if !ok {
+		util.Logger().Error("GetCrossChainFee coin err")
+		return nil
 	}
 
-	return cc.SrcChain.Client, cc.SrcChain.Client
+	ccf, ok := c.Fee[token.CoinType]
+	if !ok {
+		util.Logger().Error("GetCrossChainFee coin type err")
+		return nil
+	}
+
+	return ccf
 }
 
 func (c *MysGateConfig) CloseClient() {
-	for _, s := range c.Chains {
-		s.SrcChain.Client.Close()
-		s.DestChain.Client.Close()
+	for _, v := range c.SupportChains {
+		v.Client.Close()
 	}
 }
 

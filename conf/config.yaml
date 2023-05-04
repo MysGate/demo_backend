@@ -5,25 +5,40 @@ log:
   path: "./mysgate.log"
   level: "debug"
   
-debug: false
+debug: true
+
+chains:
+  - name: "zkSync Era"
+    chain_id: 280
+    rpc_url: "https://testnet.era.zksync.dev"
+    src_contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+    dest_contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0" 
+    private_key: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+  - name: "Scroll"
+    chain_id: 534353
+    rpc_url: "https://alpha-rpc.scroll.io/l2"
+    src_contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+    dest_contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0" 
+    private_key: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
 cross_chains:
-  - name: "zksync-scroll"
-    src_chain:
-      rpc_url: "ws://127.0.0.1:8545"
-      contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-      private_key: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-    dest_chain:
-      rpc_url: "ws://127.0.0.1:8545"
-      contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-      private_key: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-  - name: "scroll-zksync"
-    src_chain:
-      rpc_url: "ws://127.0.0.1:8545"
-      contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-      private_key: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-    dest_chain:
-     rpc_url: "ws://127.0.0.1:8545"
-     contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-     private_key: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
- 
+  - src_chain_id: 280
+    dest_chain_id: 534353
+
+cross_chain_fees:
+  - name: "eth"
+    fixed: 0.01
+    float_rate: 0.0001
+  - name: "stablecoin"
+    fixed: 2.5
+    float_rate: 0.0001
+
+cross_chain_coins:
+  - name: "eth"
+    type: "eth"
+  - name: "usdt"
+    type: "stablecoin"
+  - name: "usdc"
+    type: "stablecoin"
+  - name: "dai"
+    type: "stablecoin"  
