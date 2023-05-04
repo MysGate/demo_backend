@@ -30,8 +30,16 @@ cross_chain_fees:
     fixed: 0.01
     float_rate: 0.0001
   - name: "stablecoin"
-    fixed: 2.5
+    fixed: 1
     float_rate: 0.0001
+
+cross_chain_coin_limit:
+  - name: "eth"
+    max_amount: 100000
+    min_amount: 0.001
+  - name: "stablecoin"
+    max_amount: 10000000
+    min_amount: 0.01   
 
 cross_chain_coins:
   - name: "eth"

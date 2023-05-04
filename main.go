@@ -2,12 +2,10 @@ package main
 
 import (
 	"flag"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/MysGate/demo_backend/conf"
+	"github.com/MysGate/demo_backend/service"
 	"github.com/MysGate/demo_backend/util"
 )
 
@@ -37,8 +35,8 @@ func main() {
 
 	initLogger(c)
 
-	exitSignal := make(chan os.Signal, 1)
-	signal.Notify(exitSignal, syscall.SIGINT, syscall.SIGTERM)
-	<-exitSignal
+	s := service.NewHttpServer(c)
+	s.RunHttpService()
+
 	util.Logger().Info("system shutdown")
 }
