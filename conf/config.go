@@ -54,6 +54,12 @@ type CrossChainFee struct {
 	FloatRate float64 `yaml:"float_rate"`
 }
 
+type CoinAmountLimit struct {
+	Name      string  `yaml:"name"`
+	MinAmount float64 `yaml:"min_amount"`
+	MaxAmount float64 `yaml:"max_amount"`
+}
+
 type CrossChainCoin struct {
 	Name     string `yaml:"name"`
 	CoinType string `yaml:"type"`
@@ -62,15 +68,18 @@ type CrossChainCoin struct {
 type MysGateConfig struct {
 	SupportChains     map[uint64]*Chain
 	SupportCrossChain map[uint64]uint64
-	Fee               map[string]*CrossChainFee
 	Coins             map[string]*CrossChainCoin
-	CrossChainCoins   []*CrossChainCoin `yaml:"cross_chain_coins"`
-	Crosschainfee     []*CrossChainFee  `yaml:"cross_chain_fees"`
-	Chains            []*Chain          `yaml:"chains"`
-	Crosschains       []*CrossChain     `yaml:"cross_chains"`
-	Service           *Service          `yaml:"service"`
-	Logger            *Log              `yaml:"log"`
-	Debug             bool              `yaml:"debug"`
+	Fee               map[string]*CrossChainFee
+	Limit             map[string]*CoinAmountLimit
+
+	CoinAmountLimits []*CoinAmountLimit `yaml:"cross_chain_coin_limit"`
+	CrossChainCoins  []*CrossChainCoin  `yaml:"cross_chain_coins"`
+	Crosschainfee    []*CrossChainFee   `yaml:"cross_chain_fees"`
+	Chains           []*Chain           `yaml:"chains"`
+	Crosschains      []*CrossChain      `yaml:"cross_chains"`
+	Service          *Service           `yaml:"service"`
+	Logger           *Log               `yaml:"log"`
+	Debug            bool               `yaml:"debug"`
 }
 
 func GetConfig() *MysGateConfig {
@@ -96,6 +105,7 @@ func (c *MysGateConfig) initConfig() {
 	c.SupportCrossChain = make(map[uint64]uint64)
 	c.Fee = make(map[string]*CrossChainFee)
 	c.Coins = make(map[string]*CrossChainCoin)
+	c.Limit = make(map[string]*CoinAmountLimit)
 
 	for _, s := range c.Chains {
 		initChain(s)
@@ -113,6 +123,10 @@ func (c *MysGateConfig) initConfig() {
 
 	for _, ccc := range c.CrossChainCoins {
 		c.Coins[strings.ToLower(ccc.Name)] = ccc
+	}
+
+	for _, cal := range c.CoinAmountLimits {
+		c.Limit[strings.ToLower(cal.Name)] = cal
 	}
 }
 
@@ -183,9 +197,28 @@ func (c *MysGateConfig) GetCrossChainFee(coin string) *CrossChainFee {
 	return ccf
 }
 
+func (c *MysGateConfig) GetCoinLimit(coin string) *CoinAmountLimit {
+	lc := strings.ToLower(coin)
+	token, ok := c.Coins[lc]
+	if !ok {
+		util.Logger().Error("GetCoinLimit coin err")
+		return nil
+	}
+
+	cal, ok := c.Limit[token.CoinType]
+	if !ok {
+		util.Logger().Error("GetCoinLimit coin type err")
+		return nil
+	}
+
+	return cal
+}
+
 func (c *MysGateConfig) CloseClient() {
 	for _, v := range c.SupportChains {
-		v.Client.Close()
+		if v.Client != nil {
+			v.Client.Close()
+		}
 	}
 }
 
