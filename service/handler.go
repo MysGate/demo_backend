@@ -12,6 +12,10 @@ func (s *Server) ping(c *gin.Context) {
 	c.JSON(http.StatusOK, m)
 }
 
+func (s *Server) getSupportCoins(c *gin.Context) {
+	c.JSON(http.StatusOK, s.cfg.SupportCoins)
+}
+
 func (s *Server) getCrossChainPair(c *gin.Context) {
 	mccp := s.getSupportChainPair()
 	if mccp == nil {

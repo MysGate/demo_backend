@@ -21,6 +21,7 @@ func NewHttpServer(c *conf.MysGateConfig) (s *Server) {
 
 func (s *Server) initRouter() {
 	s.e.GET("/ping", s.ping)
+	s.e.GET("/coin", s.getSupportCoins)
 	s.e.GET("/pair", s.getCrossChainPair)
 	s.e.GET("/fee", s.getFee)
 	s.e.POST("/cost", s.getCost)
