@@ -42,7 +42,7 @@ cross_chain_coin_limit:
     max_amount: 100000
     min_amount: 0.001
   - name: "stablecoin"
-    max_amount: 10000000
+    max_amount: 100000
     min_amount: 0.01   
 
 cross_chain_coins:
