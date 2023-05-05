@@ -13,7 +13,14 @@ func (s *Server) ping(c *gin.Context) {
 }
 
 func (s *Server) getCrossChainPair(c *gin.Context) {
-	c.String(200, "pair")
+	mccp := s.getSupportChainPair()
+	if mccp == nil {
+		m := module.GetMessage(module.INTERNAL_ERROR)
+		c.JSON(http.StatusInternalServerError, m)
+		return
+	}
+
+	c.JSON(http.StatusOK, mccp)
 }
 
 func (s *Server) getFee(c *gin.Context) {
