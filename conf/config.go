@@ -67,7 +67,7 @@ type CrossChainCoin struct {
 
 type MysGateConfig struct {
 	SupportChains     map[uint64]*Chain
-	SupportCrossChain map[uint64]uint64
+	SupportCrossChain map[uint64][]uint64
 	Coins             map[string]*CrossChainCoin
 	Fee               map[string]*CrossChainFee
 	Limit             map[string]*CoinAmountLimit
@@ -102,7 +102,7 @@ func initChain(s *Chain) {
 
 func (c *MysGateConfig) initConfig() {
 	c.SupportChains = make(map[uint64]*Chain)
-	c.SupportCrossChain = make(map[uint64]uint64)
+	c.SupportCrossChain = make(map[uint64][]uint64)
 	c.Fee = make(map[string]*CrossChainFee)
 	c.Coins = make(map[string]*CrossChainCoin)
 	c.Limit = make(map[string]*CoinAmountLimit)
@@ -114,7 +114,7 @@ func (c *MysGateConfig) initConfig() {
 	}
 
 	for _, cc := range c.Crosschains {
-		c.SupportCrossChain[cc.SrcChainId] = cc.DestChainId
+		c.SupportCrossChain[cc.SrcChainId] = append(c.SupportCrossChain[cc.SrcChainId], cc.DestChainId)
 	}
 
 	for _, ccf := range c.Crosschainfee {
@@ -130,7 +130,7 @@ func (c *MysGateConfig) initConfig() {
 	}
 }
 
-func (c *MysGateConfig) findCrossChain(cid uint64) *Chain {
+func (c *MysGateConfig) FindCrossChain(cid uint64) *Chain {
 	if v, ok := c.SupportChains[cid]; ok {
 		return v
 	}
@@ -164,7 +164,7 @@ func (c *MysGateConfig) initEthClient(cc *Chain) error {
 }
 
 func (c *MysGateConfig) GetEthClient(cid uint64) *ethclient.Client {
-	cc := c.findCrossChain(cid)
+	cc := c.FindCrossChain(cid)
 	if cc == nil {
 		util.Logger().Error("Dial err")
 		return nil

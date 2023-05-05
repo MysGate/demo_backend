@@ -1,9 +1,10 @@
 package module
 
 const (
-	PARAM_ERROR  string = "Params error"
-	AMOUNT_ERROR string = "amount error"
-	PONG         string = "Pong"
+	PARAM_ERROR    string = "Params error"
+	AMOUNT_ERROR   string = "amount error"
+	PONG           string = "Pong"
+	INTERNAL_ERROR string = "Internal error"
 )
 
 type Message struct {
