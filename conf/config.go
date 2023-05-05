@@ -40,7 +40,8 @@ type Chain struct {
 	SrcAddr             common.Address
 	DestAddr            common.Address
 	Client              *ethclient.Client
-	Name                string `yaml:"name"`
+	Name                string   `yaml:"name"`
+	SuppirtCoins        []string `yaml:"support_coins"`
 }
 
 type CrossChain struct {
@@ -71,15 +72,15 @@ type MysGateConfig struct {
 	Coins             map[string]*CrossChainCoin
 	Fee               map[string]*CrossChainFee
 	Limit             map[string]*CoinAmountLimit
-
-	CoinAmountLimits []*CoinAmountLimit `yaml:"cross_chain_coin_limit"`
-	CrossChainCoins  []*CrossChainCoin  `yaml:"cross_chain_coins"`
-	Crosschainfee    []*CrossChainFee   `yaml:"cross_chain_fees"`
-	Chains           []*Chain           `yaml:"chains"`
-	Crosschains      []*CrossChain      `yaml:"cross_chains"`
-	Service          *Service           `yaml:"service"`
-	Logger           *Log               `yaml:"log"`
-	Debug            bool               `yaml:"debug"`
+	SupportCoins      []string           `yaml:"support_coins"`
+	CoinAmountLimits  []*CoinAmountLimit `yaml:"cross_chain_coin_limit"`
+	CrossChainCoins   []*CrossChainCoin  `yaml:"cross_chain_coins"`
+	Crosschainfee     []*CrossChainFee   `yaml:"cross_chain_fees"`
+	Chains            []*Chain           `yaml:"chains"`
+	Crosschains       []*CrossChain      `yaml:"cross_chains"`
+	Service           *Service           `yaml:"service"`
+	Logger            *Log               `yaml:"log"`
+	Debug             bool               `yaml:"debug"`
 }
 
 func GetConfig() *MysGateConfig {

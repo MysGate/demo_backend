@@ -12,8 +12,9 @@ type Message struct {
 }
 
 type Chain struct {
-	ChainName string `json:"chain_name"`
-	ChainID   uint64 `json:"chain_id"`
+	ChainName    string   `json:"chain_name"`
+	ChainID      uint64   `json:"chain_id"`
+	SupportCoins []string `json:"support_coins"`
 }
 
 type CrossChainPair struct {

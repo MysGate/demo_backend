@@ -8,8 +8,9 @@ import (
 
 func (s *Server) convertConfChain2ModuleChain(src *conf.Chain) *module.Chain {
 	mc := &module.Chain{
-		ChainName: src.Name,
-		ChainID:   src.ChainID,
+		ChainName:    src.Name,
+		ChainID:      src.ChainID,
+		SupportCoins: src.SuppirtCoins,
 	}
 	return mc
 }
