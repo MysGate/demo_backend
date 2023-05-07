@@ -72,6 +72,7 @@ type MysGateConfig struct {
 	Coins             map[string]*CrossChainCoin
 	Fee               map[string]*CrossChainFee
 	Limit             map[string]*CoinAmountLimit
+	Porters           []string           `yaml:"porters"`
 	SupportCoins      []string           `yaml:"support_coins"`
 	CoinAmountLimits  []*CoinAmountLimit `yaml:"cross_chain_coin_limit"`
 	CrossChainCoins   []*CrossChainCoin  `yaml:"cross_chain_coins"`
