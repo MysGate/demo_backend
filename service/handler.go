@@ -43,6 +43,10 @@ func (s *Server) getFee(c *gin.Context) {
 	c.JSON(http.StatusOK, f)
 }
 
+func (s *Server) getPorters(c *gin.Context) {
+	c.JSON(http.StatusOK, s.cfg.Porters)
+}
+
 func (s *Server) getCost(c *gin.Context) {
 	req := module.CostReq{}
 	err := c.ShouldBind(&req)

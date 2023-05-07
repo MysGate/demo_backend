@@ -24,6 +24,7 @@ func (s *Server) initRouter() {
 	s.e.GET("/coin", s.getSupportCoins)
 	s.e.GET("/pair", s.getCrossChainPair)
 	s.e.GET("/fee", s.getFee)
+	s.e.GET("/porter", s.getPorters)
 	s.e.POST("/cost", s.getCost)
 }
 
