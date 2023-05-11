@@ -28,7 +28,8 @@ type Service struct {
 }
 
 type Chain struct {
-	RpcUrl              string `yaml:"rpc_url"`
+	SrcRpcUrl           string `yaml:"src_rpc_url"`
+	DestRpcUrl          string `yaml:"dest_rpc_url"`
 	PrivateKey          string `yaml:"private_key"`
 	Key                 *ecdsa.PrivateKey
 	ChainID             uint64 `yaml:"chain_id"`
@@ -39,7 +40,8 @@ type Chain struct {
 	DestContractAddress string `yaml:"dest_contract_address"`
 	SrcAddr             common.Address
 	DestAddr            common.Address
-	Client              *ethclient.Client
+	SrcClient           *ethclient.Client
+	DestClient          *ethclient.Client
 	Name                string   `yaml:"name"`
 	SuppirtCoins        []string `yaml:"support_coins"`
 }
@@ -100,6 +102,7 @@ func initChain(s *Chain) {
 	s.Key = privateKey
 	s.SrcAddr = common.HexToAddress(s.SrcContractAddress)
 	s.DestAddr = common.HexToAddress(s.DestContractAddress)
+
 }
 
 func (c *MysGateConfig) initConfig() {
@@ -111,7 +114,7 @@ func (c *MysGateConfig) initConfig() {
 
 	for _, s := range c.Chains {
 		initChain(s)
-
+		c.initEthClient(s)
 		c.SupportChains[s.ChainID] = s
 	}
 
@@ -141,16 +144,23 @@ func (c *MysGateConfig) FindCrossChain(cid uint64) *Chain {
 }
 
 func (c *MysGateConfig) initEthClient(cc *Chain) error {
-	conn, err := ethclient.Dial(cc.RpcUrl)
+	srcConn, err := ethclient.Dial(cc.SrcRpcUrl)
 	if err != nil {
-		errMsg := fmt.Sprintf("conn err is: %+v", err)
+		errMsg := fmt.Sprintf("src conn err is: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	destConn, err := ethclient.Dial(cc.DestRpcUrl)
+	if err != nil {
+		errMsg := fmt.Sprintf("dest conn err is: %+v", err)
 		util.Logger().Error(errMsg)
 		return err
 	}
 
 	value := big.NewInt(1000000000000000000) // in wei (1 eth)
 	gasLimit := uint64(30000000)             // in units
-	gasPrice, err := conn.SuggestGasPrice(context.Background())
+	gasPrice, err := srcConn.SuggestGasPrice(context.Background())
 	if err != nil {
 		errMsg := fmt.Sprintf("get suggest gas price err:", err)
 		util.Logger().Error(errMsg)
@@ -160,26 +170,10 @@ func (c *MysGateConfig) initEthClient(cc *Chain) error {
 	cc.Value = value
 	cc.GasLimit = gasLimit
 	cc.GasSuggest = gasPrice
-	cc.Client = conn
+	cc.SrcClient = srcConn
+	cc.DestClient = destConn
 
 	return nil
-}
-
-func (c *MysGateConfig) GetEthClient(cid uint64) *ethclient.Client {
-	cc := c.FindCrossChain(cid)
-	if cc == nil {
-		util.Logger().Error("Dial err")
-		return nil
-	}
-
-	err := c.initEthClient(cc)
-	if err != nil {
-		errMsg := fmt.Sprintf("getEthClient src err:", err)
-		util.Logger().Error(errMsg)
-		return nil
-	}
-
-	return cc.Client
 }
 
 func (c *MysGateConfig) GetCrossChainFee(coin string) *CrossChainFee {
@@ -218,8 +212,12 @@ func (c *MysGateConfig) GetCoinLimit(coin string) *CoinAmountLimit {
 
 func (c *MysGateConfig) CloseClient() {
 	for _, v := range c.SupportChains {
-		if v.Client != nil {
-			v.Client.Close()
+		if v.SrcClient != nil {
+			v.SrcClient.Close()
+		}
+
+		if v.DestClient != nil {
+			v.DestClient.Close()
 		}
 	}
 }
