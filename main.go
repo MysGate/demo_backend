@@ -4,6 +4,7 @@ import (
 	"flag"
 	"time"
 
+	"github.com/MysGate/demo_backend/chain"
 	"github.com/MysGate/demo_backend/conf"
 	"github.com/MysGate/demo_backend/service"
 	"github.com/MysGate/demo_backend/util"
@@ -34,6 +35,9 @@ func main() {
 	defer c.CloseClient()
 
 	initLogger(c)
+
+	chain.StartChainManager(c)
+	util.Logger().Info("chain manager module start succeed!")
 
 	s := service.NewHttpServer(c)
 	s.RunHttpService()
