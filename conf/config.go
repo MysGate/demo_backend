@@ -84,6 +84,7 @@ type MysGateConfig struct {
 	Service           *Service           `yaml:"service"`
 	Logger            *Log               `yaml:"log"`
 	Debug             bool               `yaml:"debug"`
+	ZkpUrl            string             `yaml:"zkp_url"`
 }
 
 func GetConfig() *MysGateConfig {
