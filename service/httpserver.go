@@ -3,17 +3,20 @@ package service
 import (
 	"github.com/MysGate/demo_backend/conf"
 	"github.com/gin-gonic/gin"
+	"github.com/go-xorm/xorm"
 )
 
 type Server struct {
 	cfg *conf.MysGateConfig
 	e   *gin.Engine
+	db  *xorm.Engine
 }
 
-func NewHttpServer(c *conf.MysGateConfig) (s *Server) {
+func NewHttpServer(c *conf.MysGateConfig, db *xorm.Engine) (s *Server) {
 	s = &Server{
 		cfg: c,
 		e:   gin.Default(),
+		db:  db,
 	}
 	s.initRouter()
 	return
@@ -24,7 +27,7 @@ func (s *Server) initRouter() {
 	s.e.GET("/coin", s.getSupportCoins)
 	s.e.GET("/pair", s.getCrossChainPair)
 	s.e.GET("/fee", s.getFee)
-	s.e.GET("/porter", s.getPorters)
+	s.e.POST("/porter", s.getPorters)
 	s.e.POST("/cost", s.getCost)
 }
 

@@ -1,9 +1,12 @@
 package service
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/MysGate/demo_backend/module"
+	"github.com/MysGate/demo_backend/router"
+	"github.com/MysGate/demo_backend/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -44,7 +47,45 @@ func (s *Server) getFee(c *gin.Context) {
 }
 
 func (s *Server) getPorters(c *gin.Context) {
-	c.JSON(http.StatusOK, s.cfg.Porters)
+	req := module.RoterReq{}
+	err := c.ShouldBind(&req)
+	if err != nil {
+		m := module.GetMessage(module.PARAM_ERROR)
+		c.JSON(http.StatusInternalServerError, m)
+		return
+	}
+
+	rm := router.GetManager(s.cfg)
+	var routers []*module.Router
+	porters := rm.SelectPorters(&req)
+	for _, p := range porters {
+		transfered, completion, err := module.GetPorterTransferedAndCompletion(p.Address, s.db)
+		if err != nil {
+			util.Logger().Error(fmt.Sprintf("getPorters err: +v", err))
+			continue
+		}
+		p.Transfered = transfered
+		p.Completion = completion
+
+		r1 := &module.Router{
+			From: req.From,
+			To:   p.Address,
+		}
+		routers = append(routers, r1)
+
+		r2 := &module.Router{
+			From: p.Address,
+			To:   req.To,
+		}
+		routers = append(routers, r2)
+	}
+
+	resp := &module.RoterResponse{
+		Porters: porters,
+		Routers: routers,
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 func (s *Server) getCost(c *gin.Context) {

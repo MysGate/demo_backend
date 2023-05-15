@@ -1,6 +1,10 @@
 service:
   service_port:  ":50852"
 
+mysql:
+  uri: "root:12345678@tcp(127.0.0.1:3306)/mysgate_demo?charset=utf8mb4"
+  show_sql: true
+
 log:
   path: "./mysgate.log"
   level: "debug"
@@ -60,7 +64,9 @@ cross_chain_coins:
 support_coins:
   - "usdt" 
 
-porters:
-  - "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"  
+router:
+  type: "fixed"
+  porters:
+    - "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"  
 
-zkp_url: "http://127.0.0.1:2000/proof"  
+zkp_url: "http://127.0.0.1:2000/proof"

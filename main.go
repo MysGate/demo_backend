@@ -6,12 +6,17 @@ import (
 
 	"github.com/MysGate/demo_backend/chain"
 	"github.com/MysGate/demo_backend/conf"
+	"github.com/MysGate/demo_backend/module"
 	"github.com/MysGate/demo_backend/service"
 	"github.com/MysGate/demo_backend/util"
 )
 
 func fixTimeZone() {
 	time.Local = time.FixedZone("CST", 3600*8)
+}
+
+func initMysqlDB(c *conf.MysGateConfig) {
+
 }
 
 func initConfig(yaml string) *conf.MysGateConfig {
@@ -36,10 +41,11 @@ func main() {
 
 	initLogger(c)
 
+	e := module.InitMySQLXorm(c.MySql.Uri, c.MySql.ShowSQL)
 	chain.StartChainManager(c)
 	util.Logger().Info("chain manager module start succeed!")
 
-	s := service.NewHttpServer(c)
+	s := service.NewHttpServer(c, e)
 	s.RunHttpService()
 
 	util.Logger().Info("system shutdown")
