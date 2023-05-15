@@ -27,6 +27,11 @@ type Service struct {
 	ServicePort string `yaml:"service_port"`
 }
 
+type MySQL struct {
+	Uri     string `yaml:"uri"`
+	ShowSQL bool   `yaml:"show_sql"`
+}
+
 type Chain struct {
 	SrcRpcUrl           string `yaml:"src_rpc_url"`
 	DestRpcUrl          string `yaml:"dest_rpc_url"`
@@ -68,13 +73,18 @@ type CrossChainCoin struct {
 	CoinType string `yaml:"type"`
 }
 
+type Router struct {
+	Type    string   `yaml:"type"`
+	Porters []string `yaml:"porters"`
+}
+
 type MysGateConfig struct {
 	SupportChains     map[uint64]*Chain
 	SupportCrossChain map[uint64][]uint64
 	Coins             map[string]*CrossChainCoin
 	Fee               map[string]*CrossChainFee
 	Limit             map[string]*CoinAmountLimit
-	Porters           []string           `yaml:"porters"`
+	Router            *Router            `yaml:"router"`
 	SupportCoins      []string           `yaml:"support_coins"`
 	CoinAmountLimits  []*CoinAmountLimit `yaml:"cross_chain_coin_limit"`
 	CrossChainCoins   []*CrossChainCoin  `yaml:"cross_chain_coins"`
@@ -85,6 +95,7 @@ type MysGateConfig struct {
 	Logger            *Log               `yaml:"log"`
 	Debug             bool               `yaml:"debug"`
 	ZkpUrl            string             `yaml:"zkp_url"`
+	MySql             *MySQL             `yaml:"mysql"`
 }
 
 func GetConfig() *MysGateConfig {
