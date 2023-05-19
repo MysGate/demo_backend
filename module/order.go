@@ -12,7 +12,7 @@ type Order struct {
 	SrcChainId int    `xorm:"src_chain_id" json:"src_chain_id"`
 	SrcAddress string `xorm:"src_address" json:"src_address"`
 	SrcToken   string `xorm:"src_token" json:"src_token"`
-	SrcAmount  string `xorm:"src_amount" json:"src_amount"`
+	SrcAmount  uint32 `xorm:"src_amount" json:"src_amount"`
 	SrcTxHash  string `xorm:"src_tx_hash" json:"src_tx_hash"`
 
 	FixedFee    string `xorm:"fixed_fee" json:"fixed_fee"`
@@ -46,4 +46,9 @@ func (o *Order) GetOrderList(src_chain_id int, dest_chain_id int, db *xorm.Engin
 	orders := make([]Order, 0)
 	err := db.Table(GetOrderTableName()).Where("src_chain_id = ? and dest_chain_id = ?", src_chain_id, dest_chain_id).Find(&orders)
 	return err, orders
+}
+
+func (o *Order) InsertOrder(order Order, db *xorm.Engine) error {
+	_, err := db.Table(GetOrderTableName()).Insert(&order)
+	return err
 }
