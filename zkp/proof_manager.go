@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/MysGate/demo_backend/conf"
-	"github.com/MysGate/demo_backend/module"
+	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 )
 
@@ -24,7 +24,7 @@ func GetProofManager(cfg *conf.MysGateConfig) *ProofManager {
 	return pm
 }
 
-func (m *ProofManager) GetZKProof() *module.ZkProof {
+func (m *ProofManager) GetZKProof() *model.ZkProof {
 	url := m.Cfg.ZkpUrl
 	hc := util.GetHTTPClient()
 	body, err := util.HTTPGet("POST", url, hc)
@@ -32,7 +32,7 @@ func (m *ProofManager) GetZKProof() *module.ZkProof {
 		util.Logger().Error(fmt.Sprintf("GetZKProof err:+v", err))
 		return nil
 	}
-	zkp := &module.ZkProof{}
+	zkp := &model.ZkProof{}
 	err = json.Unmarshal(body, zkp)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("GetZKProof err:+v", err))

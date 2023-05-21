@@ -5,7 +5,7 @@ import (
 
 	"github.com/MysGate/demo_backend/core"
 	"github.com/MysGate/demo_backend/core/errno"
-	"github.com/MysGate/demo_backend/module"
+	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +19,7 @@ func (s *Server) orderSearch(c *gin.Context) {
 		return
 	}
 
-	has, result := module.GetOrder(requestData.OrderId, s.db)
+	has, result := model.GetOrder(requestData.OrderId, s.db)
 	if has {
 		core.SendResponse(c, errno.OK, result)
 	} else {
@@ -36,7 +36,7 @@ func (s *Server) orderList(c *gin.Context) {
 		return
 	}
 
-	err, orders := module.GetOrderList(requestData.SrcChainId, requestData.DestChainId, s.db)
+	err, orders := model.GetOrderList(requestData.SrcChainId, requestData.DestChainId, s.db)
 	if err != nil {
 		core.SendResponse(c, errno.InternalServerErr, nil)
 	} else {

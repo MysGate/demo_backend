@@ -1,10 +1,10 @@
 package chain
 
-import "github.com/MysGate/demo_backend/module"
+import "github.com/MysGate/demo_backend/model"
 
 type IDispatcher interface {
-	PayForDest(*module.Order) error
-	GenerateZkProof(*module.Order) error
-	VerifyZkProof(*module.Order) error
-	OrderSucceed(*module.Order) error
+	PayForDest(*model.Order) error
+	GenerateZkProof(*model.Order) error
+	VerifyZkProof(*model.Order) error
+	OrderSucceed(*model.Order) error
 }

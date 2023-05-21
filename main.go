@@ -6,7 +6,7 @@ import (
 
 	"github.com/MysGate/demo_backend/chain"
 	"github.com/MysGate/demo_backend/conf"
-	"github.com/MysGate/demo_backend/module"
+	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/service"
 	"github.com/MysGate/demo_backend/util"
 )
@@ -35,7 +35,7 @@ func main() {
 	c := initConfig(yaml)
 	initLogger(c)
 
-	e := module.InitMySQLXorm(c.MySql.Uri, c.MySql.ShowSQL)
+	e := model.InitMySQLXorm(c.MySql.Uri, c.MySql.ShowSQL)
 	m := chain.InitChainManager(c, e)
 	defer m.CloseChainManager()
 	util.Logger().Info("chain manager module start succeed!")

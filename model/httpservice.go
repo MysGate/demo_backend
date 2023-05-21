@@ -1,4 +1,4 @@
-package module
+package model
 
 const (
 	PARAM_ERROR    string = "Params error"

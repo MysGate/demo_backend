@@ -3,7 +3,7 @@ package chain
 import (
 	"errors"
 
-	"github.com/MysGate/demo_backend/module"
+	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 )
 
@@ -36,7 +36,7 @@ func (cm *ChainManager) messageLoop() {
 					continue
 				}
 
-				order, ok := msg.param.(*module.Order)
+				order, ok := msg.param.(*model.Order)
 				if !ok {
 					util.Logger().Info("pay_for_dest param err")
 					continue
@@ -49,7 +49,7 @@ func (cm *ChainManager) messageLoop() {
 					continue
 				}
 
-				ch, ok := msg.param.(*module.Order)
+				ch, ok := msg.param.(*model.Order)
 				if !ok {
 					util.Logger().Info("generate_zkproof param err")
 					continue
@@ -64,7 +64,7 @@ func (cm *ChainManager) messageLoop() {
 					continue
 				}
 
-				order, ok := msg.param.(*module.Order)
+				order, ok := msg.param.(*model.Order)
 				if !ok {
 					util.Logger().Info("verify_zkproof param err")
 					continue
@@ -77,7 +77,7 @@ func (cm *ChainManager) messageLoop() {
 					continue
 				}
 
-				order, ok := msg.param.(*module.Order)
+				order, ok := msg.param.(*model.Order)
 				if !ok {
 					util.Logger().Info("verify_zkproof param err")
 					continue
@@ -106,7 +106,7 @@ func (cm *ChainManager) closeMessageLoop() {
 	return
 }
 
-func (cm *ChainManager) PayForDest(order *module.Order) error {
+func (cm *ChainManager) PayForDest(order *model.Order) error {
 	if cm.isLoopExit() {
 		errMsg := "PayForDest: channel is close"
 		err := errors.New(errMsg)
@@ -118,7 +118,7 @@ func (cm *ChainManager) PayForDest(order *module.Order) error {
 	return nil
 }
 
-func (cm *ChainManager) GenerateZkProof(order *module.Order) error {
+func (cm *ChainManager) GenerateZkProof(order *model.Order) error {
 	if cm.isLoopExit() {
 		errMsg := "GenerateZkProof: channel is close"
 		err := errors.New(errMsg)
@@ -130,7 +130,7 @@ func (cm *ChainManager) GenerateZkProof(order *module.Order) error {
 	return nil
 }
 
-func (cm *ChainManager) VerifyZkProof(order *module.Order) error {
+func (cm *ChainManager) VerifyZkProof(order *model.Order) error {
 	if cm.isLoopExit() {
 		errMsg := "VerifyZkProof: channel is close"
 		err := errors.New(errMsg)
@@ -142,7 +142,7 @@ func (cm *ChainManager) VerifyZkProof(order *module.Order) error {
 	return nil
 }
 
-func (cm *ChainManager) OrderSucceed(order *module.Order) error {
+func (cm *ChainManager) OrderSucceed(order *model.Order) error {
 	if cm.isLoopExit() {
 		errMsg := "OrderSucceed: channel is close"
 		err := errors.New(errMsg)

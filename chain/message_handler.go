@@ -3,7 +3,7 @@ package chain
 import (
 	"fmt"
 
-	"github.com/MysGate/demo_backend/module"
+	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 )
 
@@ -35,7 +35,7 @@ func (cm *ChainManager) findDestHandler(srcChainId, destChainId uint64) *DestCha
 	return destHandler
 }
 
-func (cm *ChainManager) handlerPayForDest(order *module.Order) error {
+func (cm *ChainManager) handlerPayForDest(order *model.Order) error {
 	destHandler := cm.findDestHandler(order.SrcChainId, order.DestChainId)
 	err := destHandler.crossFrom(order)
 	if err != nil {
@@ -46,14 +46,14 @@ func (cm *ChainManager) handlerPayForDest(order *module.Order) error {
 	return nil
 }
 
-func (cm *ChainManager) handlerGenerateZkproof(order *module.Order) error {
+func (cm *ChainManager) handlerGenerateZkproof(order *model.Order) error {
 	return nil
 }
 
-func (cm *ChainManager) handlerVerifyZkproof(order *module.Order) error {
+func (cm *ChainManager) handlerVerifyZkproof(order *model.Order) error {
 	return nil
 }
 
-func (cm *ChainManager) handlerOrderSucceed(order *module.Order) error {
+func (cm *ChainManager) handlerOrderSucceed(order *model.Order) error {
 	return nil
 }

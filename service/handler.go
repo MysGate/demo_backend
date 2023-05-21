@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/MysGate/demo_backend/module"
+	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/router"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/gin-gonic/gin"
 )
 
 func (s *Server) ping(c *gin.Context) {
-	m := module.GetMessage(module.PONG)
+	m := model.GetMessage(model.PONG)
 	c.JSON(http.StatusOK, m)
 }
 
@@ -22,7 +22,7 @@ func (s *Server) getSupportCoins(c *gin.Context) {
 func (s *Server) getCrossChainPair(c *gin.Context) {
 	mccp := s.getSupportChainPair()
 	if mccp == nil {
-		m := module.GetMessage(module.INTERNAL_ERROR)
+		m := model.GetMessage(model.INTERNAL_ERROR)
 		c.JSON(http.StatusInternalServerError, m)
 		return
 	}
@@ -34,12 +34,12 @@ func (s *Server) getFee(c *gin.Context) {
 	coin := c.Query("coin")
 	ccf := s.cfg.GetCrossChainFee(coin)
 	if ccf == nil {
-		m := module.GetMessage(module.PARAM_ERROR)
+		m := model.GetMessage(model.PARAM_ERROR)
 		c.JSON(http.StatusInternalServerError, m)
 		return
 	}
 
-	f := &module.Fee{
+	f := &model.Fee{
 		Fixed:     ccf.Fixed,
 		FloatRate: ccf.FloatRate,
 	}
@@ -47,19 +47,19 @@ func (s *Server) getFee(c *gin.Context) {
 }
 
 func (s *Server) getPorters(c *gin.Context) {
-	req := module.RoterReq{}
+	req := model.RouterReq{}
 	err := c.ShouldBind(&req)
 	if err != nil {
-		m := module.GetMessage(module.PARAM_ERROR)
+		m := model.GetMessage(model.PARAM_ERROR)
 		c.JSON(http.StatusInternalServerError, m)
 		return
 	}
 
 	rm := router.GetManager(s.cfg)
-	var routers []*module.Router
+	var routers []*model.Router
 	porters := rm.SelectPorters(&req)
 	for _, p := range porters {
-		transfered, completion, err := module.GetPorterTransferedAndCompletion(p.Address, s.db)
+		transfered, completion, err := model.GetPorterTransferedAndCompletion(p.Address, s.db)
 		if err != nil {
 			util.Logger().Error(fmt.Sprintf("getPorters err: +v", err))
 			continue
@@ -67,20 +67,20 @@ func (s *Server) getPorters(c *gin.Context) {
 		p.Transfered = transfered
 		p.Completion = completion
 
-		r1 := &module.Router{
+		r1 := &model.Router{
 			From: req.From,
 			To:   p.Address,
 		}
 		routers = append(routers, r1)
 
-		r2 := &module.Router{
+		r2 := &model.Router{
 			From: p.Address,
 			To:   req.To,
 		}
 		routers = append(routers, r2)
 	}
 
-	resp := &module.RoterResponse{
+	resp := &model.RouterResponse{
 		Porters: porters,
 		Routers: routers,
 	}
@@ -89,35 +89,35 @@ func (s *Server) getPorters(c *gin.Context) {
 }
 
 func (s *Server) getCost(c *gin.Context) {
-	req := module.CostReq{}
+	req := model.CostReq{}
 	err := c.ShouldBind(&req)
 	if err != nil {
-		m := module.GetMessage(module.PARAM_ERROR)
+		m := model.GetMessage(model.PARAM_ERROR)
 		c.JSON(http.StatusInternalServerError, m)
 		return
 	}
 
 	cal := s.cfg.GetCoinLimit(req.Coin)
 	if cal == nil {
-		m := module.GetMessage(module.PARAM_ERROR)
+		m := model.GetMessage(model.PARAM_ERROR)
 		c.JSON(http.StatusInternalServerError, m)
 		return
 	}
 
 	if req.Amount < cal.MinAmount || req.Amount > cal.MaxAmount {
-		m := module.GetMessage(module.AMOUNT_ERROR)
+		m := model.GetMessage(model.AMOUNT_ERROR)
 		c.JSON(http.StatusInternalServerError, m)
 		return
 	}
 
 	ccf := s.cfg.GetCrossChainFee(req.Coin)
 	if ccf == nil {
-		m := module.GetMessage(module.PARAM_ERROR)
+		m := model.GetMessage(model.PARAM_ERROR)
 		c.JSON(http.StatusInternalServerError, m)
 		return
 	}
 
-	resp := &module.CostResp{
+	resp := &model.CostResp{
 		Coin:      req.Coin,
 		Amount:    req.Amount,
 		Fixed:     ccf.Fixed,
