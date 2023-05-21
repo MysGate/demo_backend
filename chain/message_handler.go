@@ -35,22 +35,25 @@ func (cm *ChainManager) findDestHandler(srcChainId, destChainId uint64) *DestCha
 	return destHandler
 }
 
-func (cm *ChainManager) handlerPayForDest(order *module.Order) {
+func (cm *ChainManager) handlerPayForDest(order *module.Order) error {
 	destHandler := cm.findDestHandler(order.SrcChainId, order.DestChainId)
 	err := destHandler.crossFrom(order)
 	if err != nil {
 		errMsg := fmt.Sprintf("handlerPayForDest crossFrom fail, err:%+v", err)
 		util.Logger().Error(errMsg)
-		return
+		return err
 	}
-	return
+	return nil
 }
 
-func (cm *ChainManager) handlerGenerateZkproof(order *module.Order) {
+func (cm *ChainManager) handlerGenerateZkproof(order *module.Order) error {
+	return nil
 }
 
-func (cm *ChainManager) handlerVerifyZkproof(order *module.Order) {
+func (cm *ChainManager) handlerVerifyZkproof(order *module.Order) error {
+	return nil
 }
 
-func (cm *ChainManager) handlerOrderSucceed(order *module.Order) {
+func (cm *ChainManager) handlerOrderSucceed(order *module.Order) error {
+	return nil
 }
