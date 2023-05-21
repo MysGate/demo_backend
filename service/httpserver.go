@@ -29,7 +29,8 @@ func (s *Server) initRouter() {
 	s.e.GET("/fee", s.getFee)
 	s.e.POST("/porter", s.getPorters)
 	s.e.POST("/cost", s.getCost)
-	s.e.POST("/trade", s.trade)
+	s.e.POST("/order/search", s.orderSearch)
+	s.e.POST("/order/list", s.orderList)
 }
 
 func (s *Server) RunHttpService() {

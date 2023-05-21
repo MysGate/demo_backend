@@ -19,6 +19,6 @@ func InitMySQLXorm(addr string, showSQL bool) *xorm.Engine {
 	return mysgate_enging
 }
 
-func getMySql() *xorm.Engine {
+func GetMySql() *xorm.Engine {
 	return mysgate_enging
 }
