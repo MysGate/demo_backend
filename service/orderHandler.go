@@ -18,8 +18,8 @@ func (s *Server) orderSearch(c *gin.Context) {
 		core.SendResponse(c, errno.BindErr, nil)
 		return
 	}
-	orderModle := module.Order{}
-	has, result := orderModle.GetOrder(requestData.OrderId, s.db)
+
+	has, result := module.GetOrder(requestData.OrderId, s.db)
 	if has {
 		core.SendResponse(c, errno.OK, result)
 	} else {
@@ -35,8 +35,8 @@ func (s *Server) orderList(c *gin.Context) {
 		core.SendResponse(c, errno.BindErr, nil)
 		return
 	}
-	orderModle := module.Order{}
-	err, orders := orderModle.GetOrderList(requestData.SrcChainId, requestData.DestChainId, s.db)
+
+	err, orders := module.GetOrderList(requestData.SrcChainId, requestData.DestChainId, s.db)
 	if err != nil {
 		core.SendResponse(c, errno.InternalServerErr, nil)
 	} else {

@@ -37,12 +37,11 @@ func main() {
 	fixTimeZone()
 
 	c := initConfig(yaml)
-	defer c.CloseClient()
-
 	initLogger(c)
 
 	e := module.InitMySQLXorm(c.MySql.Uri, c.MySql.ShowSQL)
-	chain.StartChainManager(c)
+	m := chain.StartChainManager(c, e)
+	defer m.CloseChainManager()
 	util.Logger().Info("chain manager module start succeed!")
 
 	s := service.NewHttpServer(c, e)

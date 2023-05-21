@@ -1,18 +1,14 @@
 package conf
 
 import (
-	"context"
 	"crypto/ecdsa"
-	"fmt"
 	"io/ioutil"
-	"math/big"
 	"os"
 	"strings"
 
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"gopkg.in/yaml.v3"
 )
 
@@ -38,15 +34,10 @@ type Chain struct {
 	PrivateKey          string `yaml:"private_key"`
 	Key                 *ecdsa.PrivateKey
 	ChainID             uint64 `yaml:"chain_id"`
-	Value               *big.Int
-	GasLimit            uint64
-	GasSuggest          *big.Int
 	SrcContractAddress  string `yaml:"src_contract_address"`
 	DestContractAddress string `yaml:"dest_contract_address"`
 	SrcAddr             common.Address
 	DestAddr            common.Address
-	SrcClient           *ethclient.Client
-	DestClient          *ethclient.Client
 	Name                string   `yaml:"name"`
 	SuppirtCoins        []string `yaml:"support_coins"`
 }
@@ -126,7 +117,6 @@ func (c *MysGateConfig) initConfig() {
 
 	for _, s := range c.Chains {
 		initChain(s)
-		c.initEthClient(s)
 		c.SupportChains[s.ChainID] = s
 	}
 
@@ -151,39 +141,6 @@ func (c *MysGateConfig) FindCrossChain(cid uint64) *Chain {
 	if v, ok := c.SupportChains[cid]; ok {
 		return v
 	}
-
-	return nil
-}
-
-func (c *MysGateConfig) initEthClient(cc *Chain) error {
-	srcConn, err := ethclient.Dial(cc.SrcRpcUrl)
-	if err != nil {
-		errMsg := fmt.Sprintf("src conn err is: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	destConn, err := ethclient.Dial(cc.DestRpcUrl)
-	if err != nil {
-		errMsg := fmt.Sprintf("dest conn err is: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	value := big.NewInt(1000000000000000000) // in wei (1 eth)
-	gasLimit := uint64(30000000)             // in units
-	gasPrice, err := srcConn.SuggestGasPrice(context.Background())
-	if err != nil {
-		errMsg := fmt.Sprintf("get suggest gas price err:", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	cc.Value = value
-	cc.GasLimit = gasLimit
-	cc.GasSuggest = gasPrice
-	cc.SrcClient = srcConn
-	cc.DestClient = destConn
 
 	return nil
 }
@@ -222,17 +179,17 @@ func (c *MysGateConfig) GetCoinLimit(coin string) *CoinAmountLimit {
 	return cal
 }
 
-func (c *MysGateConfig) CloseClient() {
-	for _, v := range c.SupportChains {
-		if v.SrcClient != nil {
-			v.SrcClient.Close()
-		}
+// func (c *MysGateConfig) CloseClient() {
+// 	for _, v := range c.SupportChains {
+// 		if v.SrcClient != nil {
+// 			v.SrcClient.Close()
+// 		}
 
-		if v.DestClient != nil {
-			v.DestClient.Close()
-		}
-	}
-}
+// 		if v.DestClient != nil {
+// 			v.DestClient.Close()
+// 		}
+// 	}
+// }
 
 func ParseYaml(configFile string) error {
 	yamlFile, err := ioutil.ReadFile(configFile)
