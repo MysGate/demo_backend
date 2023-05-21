@@ -8,17 +8,11 @@ import (
 	"github.com/go-xorm/xorm"
 )
 
-var mysgate_enging *xorm.Engine
-
 func InitMySQLXorm(addr string, showSQL bool) *xorm.Engine {
-	mysgate_enging, err := xorm.NewEngine("mysql", addr)
+	e, err := xorm.NewEngine("mysql", addr)
 	if err != nil {
 		util.Logger().Fatal(fmt.Sprintf("create mysql connection failed. err = %v", err))
 	}
-	mysgate_enging.ShowSQL(showSQL)
-	return mysgate_enging
-}
-
-func GetMySql() *xorm.Engine {
-	return mysgate_enging
+	e.ShowSQL(showSQL)
+	return e
 }

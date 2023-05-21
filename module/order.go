@@ -15,10 +15,9 @@ type Order struct {
 	SrcAmount  uint32 `xorm:"src_amount" json:"src_amount"`
 	SrcTxHash  string `xorm:"src_tx_hash" json:"src_tx_hash"`
 
-	FixedFee    string `xorm:"fixed_fee" json:"fixed_fee"`
-	FeeRate     string `xorm:"fee_rate" json:"fee_rate"`
-	TransferFee string `xorm:"transfer_fee" json:"transfer_fee"`
-	TotalFee    string `xorm:"total_fee" json:"total_fee"`
+	FixedFee float64 `xorm:"fixed_fee" json:"fixed_fee"`
+	FeeRate  float64 `xorm:"fee_rate" json:"fee_rate"`
+	TotalFee float64 `xorm:"total_fee" json:"total_fee"`
 
 	DestChainId int    `xorm:"dest_chain_id" json:"dest_chain_id"`
 	DestAddress string `xorm:"dest_address" json:"dest_address"`
@@ -36,19 +35,21 @@ func (o *Order) TableName() string {
 	return GetOrderTableName()
 }
 
-func (o *Order) GetOrder(orderId int, db *xorm.Engine) (bool, Order) {
-	order := Order{}
+func GetOrder(orderId int, db *xorm.Engine) (bool, *Order) {
+	order := &Order{}
 	has, _ := db.Table(GetOrderTableName()).ID(orderId).Get(&order)
 	return has, order
 }
 
-func (o *Order) GetOrderList(src_chain_id int, dest_chain_id int, db *xorm.Engine) (error, []Order) {
+func GetOrderList(src_chain_id int, dest_chain_id int, db *xorm.Engine) ([]Order, error) {
 	orders := make([]Order, 0)
-	err := db.Table(GetOrderTableName()).Where("src_chain_id = ? and dest_chain_id = ?", src_chain_id, dest_chain_id).Find(&orders)
-	return err, orders
+	err := db.Table(GetOrderTableName()).
+		Where("src_chain_id = ?", src_chain_id).
+		And("dest_chain_id = ?", dest_chain_id).Find(&orders)
+	return orders, err
 }
 
-func (o *Order) InsertOrder(order Order, db *xorm.Engine) error {
-	_, err := db.Table(GetOrderTableName()).Insert(&order)
+func InsertOrder(order *Order, db *xorm.Engine) error {
+	_, err := db.Table(GetOrderTableName()).Insert(order)
 	return err
 }

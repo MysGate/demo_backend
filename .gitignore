@@ -16,6 +16,7 @@
 bin/
 # Dependency directories (remove the comment below to include it)
 # vendor/
-
+log/
+*.log
 # Go workspace file
 go.work
