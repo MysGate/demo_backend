@@ -7,7 +7,7 @@ import (
 	"log"
 	"math/big"
 
-	"github.com/MysGate/demo_backend/module"
+	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -41,7 +41,7 @@ func NewDestChainHandler(client *ethclient.Client, addr common.Address, key *ecd
 	return dch
 }
 
-func (dest *DestChainHandler) crossFrom(order *module.Order) error {
+func (dest *DestChainHandler) crossFrom(order *model.Order) error {
 	nonce, err := dest.HttpClient.PendingNonceAt(context.Background(), dest.Caller)
 	if err != nil {
 		errMsg := fmt.Sprintf("crossFrom:dest.HttpClient.PendingNonceAt err: %+v", err)

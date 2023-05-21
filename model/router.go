@@ -1,8 +1,8 @@
-package module
+package model
 
 import "github.com/go-xorm/xorm"
 
-type RoterReq struct {
+type RouterReq struct {
 	SrcChain  string  `json:"src_chain"`
 	DestChain string  `json:"dest_chain"`
 	From      string  `json:"from"`
@@ -22,7 +22,7 @@ type Router struct {
 	To   string `json:"to"`
 }
 
-type RoterResponse struct {
+type RouterResponse struct {
 	Porters []*Porter `json:"porters"`
 	Routers []*Router `json:"routers"`
 }

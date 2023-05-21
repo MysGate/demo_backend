@@ -1,4 +1,4 @@
-package module
+package model
 
 const (
 	DB_TABLE_ORDER = "orders"

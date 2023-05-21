@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MysGate/demo_backend/module"
+	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -79,7 +79,7 @@ func (sch *SrcChainHandler) DispatchEvent(vLog types.Log) {
 	sch.disp.PayForDest(order)
 }
 
-func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*module.Order, bool) {
+func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*model.Order, bool) {
 	abiJson := ""
 	contractAbi, _ := abi.JSON(strings.NewReader(abiJson))
 	orderEvent := &util.OrderEvent{}
@@ -89,7 +89,7 @@ func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*module.Order, bool) {
 		return nil, false
 	}
 
-	order := &module.Order{
+	order := &model.Order{
 		SrcAddress:  orderEvent.SrcAddress.Hex(),
 		SrcAmount:   util.ConvertTokenAmountToFloat64(orderEvent.SrcAmount, 18),
 		SrcToken:    orderEvent.SrcToken.Hex(),
@@ -99,6 +99,6 @@ func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*module.Order, bool) {
 
 	srcChainId, _ := sch.HttpClient.NetworkID(context.Background())
 	order.SrcChainId = srcChainId.Uint64()
-	module.InsertOrder(order, sch.Db)
+	model.InsertOrder(order, sch.Db)
 	return order, true
 }
