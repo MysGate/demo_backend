@@ -3,9 +3,12 @@ package chain
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"log"
 	"math/big"
 
+	"github.com/MysGate/demo_backend/module"
+	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -13,7 +16,7 @@ import (
 )
 
 type DestChainHandler struct {
-	Client          *ethclient.Client
+	HttpClient      *ethclient.Client
 	ContractAddress common.Address
 	PrivKey         *ecdsa.PrivateKey
 	Caller          common.Address
@@ -21,7 +24,7 @@ type DestChainHandler struct {
 
 func NewDestChainHandler(client *ethclient.Client, addr common.Address, key *ecdsa.PrivateKey) *DestChainHandler {
 	dch := &DestChainHandler{
-		Client:          client,
+		HttpClient:      client,
 		ContractAddress: addr,
 		PrivKey:         key,
 	}
@@ -38,15 +41,19 @@ func NewDestChainHandler(client *ethclient.Client, addr common.Address, key *ecd
 	return dch
 }
 
-func (dest *DestChainHandler) crossFrom(receipt common.Address, amount float64) {
-	nonce, err := dest.Client.PendingNonceAt(context.Background(), dest.Caller)
+func (dest *DestChainHandler) crossFrom(order *module.Order) error {
+	nonce, err := dest.HttpClient.PendingNonceAt(context.Background(), dest.Caller)
 	if err != nil {
-		log.Fatal(err)
+		errMsg := fmt.Sprintf("crossFrom:dest.HttpClient.PendingNonceAt err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
 	}
 
-	gasPrice, err := dest.Client.SuggestGasPrice(context.Background())
+	gasPrice, err := dest.HttpClient.SuggestGasPrice(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		errMsg := fmt.Sprintf("crossFrom:dest.HttpClient.SuggestGasPrice err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
 	}
 
 	auth := bind.NewKeyedTransactor(dest.PrivKey)
@@ -56,5 +63,5 @@ func (dest *DestChainHandler) crossFrom(receipt common.Address, amount float64) 
 	auth.GasPrice = gasPrice
 
 	//TODO contract call
-
+	return nil
 }

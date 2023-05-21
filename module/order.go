@@ -7,28 +7,30 @@ import (
 )
 
 type Order struct {
-	ID         int    `xorm:"'id' pk autoincr"`
-	PoterId    string `xorm:"poter_id" json:"poter_id"`
-	SrcChainId int    `xorm:"src_chain_id" json:"src_chain_id"`
-	SrcAddress string `xorm:"src_address" json:"src_address"`
-	SrcToken   string `xorm:"src_token" json:"src_token"`
-	SrcAmount  uint32 `xorm:"src_amount" json:"src_amount"`
-	SrcTxHash  string `xorm:"src_tx_hash" json:"src_tx_hash"`
+	ID         int64   `xorm:"'id' pk autoincr"`
+	PoterId    string  `xorm:"poter_id" json:"poter_id"`
+	SrcChainId uint64  `xorm:"src_chain_id" json:"src_chain_id"`
+	SrcAddress string  `xorm:"src_address" json:"src_address"`
+	SrcToken   string  `xorm:"src_token" json:"src_token"`
+	SrcAmount  float64 `xorm:"src_amount" json:"src_amount"`
+	SrcTxHash  string  `xorm:"src_tx_hash" json:"src_tx_hash"`
 
 	FixedFee float64 `xorm:"fixed_fee" json:"fixed_fee"`
 	FeeRate  float64 `xorm:"fee_rate" json:"fee_rate"`
 	TotalFee float64 `xorm:"total_fee" json:"total_fee"`
 
-	DestChainId int    `xorm:"dest_chain_id" json:"dest_chain_id"`
-	DestAddress string `xorm:"dest_address" json:"dest_address"`
-	DestAmount  string `xorm:"dest_amount" json:"dest_amount"`
-	DestTxHash  string `xorm:"dest_tx_hash" json:"dest_tx_hash"`
+	DestChainId uint64  `xorm:"dest_chain_id" json:"dest_chain_id"`
+	DestAddress string  `xorm:"dest_address" json:"dest_address"`
+	DestAmount  float64 `xorm:"dest_amount" json:"dest_amount"`
+	DestTxHash  string  `xorm:"dest_tx_hash" json:"dest_tx_hash"`
 
 	Proof string `xorm:"proof" json:"proof"`
 
 	Created      time.Time `xorm:"created" json:"created"`
 	FinishedTime time.Time `xorm:"finished_time" json:"finish_time"`
 	Updated      time.Time `xorm:"updated" json:"updated"`
+
+	Status int `xorm:"status" json:"status"`
 }
 
 func (o *Order) TableName() string {

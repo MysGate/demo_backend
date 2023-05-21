@@ -18,5 +18,6 @@ bin/
 # vendor/
 log/
 *.log
+demo.yaml
 # Go workspace file
 go.work

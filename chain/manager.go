@@ -6,32 +6,36 @@ import (
 	"fmt"
 
 	"github.com/MysGate/demo_backend/conf"
-	"github.com/MysGate/demo_backend/module"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/go-xorm/xorm"
 )
 
-type Conn struct {
-	SrcClient  *ethclient.Client
-	DestClient *ethclient.Client
+type Connection struct {
+	WssClient  *ethclient.Client
+	HttpClient *ethclient.Client
+}
+
+type ChainHandler struct {
+	src  *SrcChainHandler
+	dest map[uint64]*DestChainHandler
 }
 
 type ChainManager struct {
-	cfg          *conf.MysGateConfig
-	srcHandlers  map[uint64]*SrcChainHandler
-	destHandlers map[uint64][]*DestChainHandler
-	clients      map[uint64]*Conn
-	db           *xorm.Engine
+	cfg      *conf.MysGateConfig
+	db       *xorm.Engine
+	clients  map[uint64]*Connection
+	handlers map[uint64]*ChainHandler
+	msgChan  chan *message
 }
 
 func newChainManager(cfg *conf.MysGateConfig, db *xorm.Engine) *ChainManager {
 	cm := &ChainManager{
-		cfg:          cfg,
-		srcHandlers:  make(map[uint64]*SrcChainHandler),
-		destHandlers: make(map[uint64][]*DestChainHandler),
-		clients:      make(map[uint64]*Conn),
-		db:           db,
+		cfg:      cfg,
+		db:       db,
+		handlers: make(map[uint64]*ChainHandler),
+		clients:  make(map[uint64]*Connection),
+		msgChan:  make(chan *message, 1000000),
 	}
 
 	return cm
@@ -55,11 +59,17 @@ func (cm *ChainManager) start() {
 			continue
 		}
 
-		srcClient := cm.createEthClient(cc.SrcRpcUrl)
+		wssClient := cm.createEthClient(cc.WssRpcUrl)
+		httpClient := cm.createEthClient(cc.WssRpcUrl)
 
-		cch := NewSrcChainHandler(srcClient, cc.SrcAddr, cm.db, cm)
-		cm.srcHandlers[cc.ChainID] = cch
-		go cch.runListenEvent()
+		cch := NewSrcChainHandler(wssClient, httpClient, cc.SrcAddr, cm.db, cm)
+		if _, ok := cm.handlers[cc.ChainID]; !ok {
+			ch := &ChainHandler{
+				src:  cch,
+				dest: make(map[uint64]*DestChainHandler),
+			}
+			cm.handlers[cc.ChainID] = ch
+		}
 
 		for _, dest := range dests {
 			cd := cm.cfg.FindCrossChain(dest)
@@ -67,32 +77,32 @@ func (cm *ChainManager) start() {
 				util.Logger().Error(fmt.Sprintf("chain manager find crosschain err:%+v ", cc))
 				continue
 			}
-			destClient := cm.createEthClient(cd.DestRpcUrl)
+			destClient := cm.createEthClient(cd.HttpRpcUrl)
 			ccd := NewDestChainHandler(destClient, cd.DestAddr, cd.Key)
-			cm.destHandlers[cc.ChainID] = append(cm.destHandlers[cc.ChainID], ccd)
+			cm.handlers[cc.ChainID].dest[cd.ChainID] = ccd
 		}
+
+		go cch.runListenEvent()
 	}
 }
 
 func StartChainManager(cfg *conf.MysGateConfig, db *xorm.Engine) *ChainManager {
 	cm := newChainManager(cfg, db)
-	go cm.start()
+	cm.start()
+	go cm.messageLoop()
 	return cm
 }
 
-func (cm *ChainManager) CloseChainManager() *ChainManager {
-	for _, sch := range cm.srcHandlers {
-		sch.close()
+func (cm *ChainManager) CloseChainManager() {
+	for _, sch := range cm.handlers {
+		sch.src.close()
 	}
 
 	for _, conn := range cm.clients {
-		conn.SrcClient.Close()
-		conn.DestClient.Close()
+		conn.WssClient.Close()
+		conn.HttpClient.Close()
 	}
 
-	return cm
-}
-
-func (cm *ChainManager) DispatchCrossChainOrder(*module.Order) error {
-	return nil
+	cm.closeMessageLoop()
+	return
 }
