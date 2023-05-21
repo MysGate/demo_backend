@@ -15,10 +15,6 @@ func fixTimeZone() {
 	time.Local = time.FixedZone("CST", 3600*8)
 }
 
-func initMysqlDB(c *conf.MysGateConfig) {
-
-}
-
 func initConfig(yaml string) *conf.MysGateConfig {
 	conf.ParseYaml(yaml)
 	c := conf.GetConfig()
