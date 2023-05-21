@@ -29,8 +29,8 @@ type MySQL struct {
 }
 
 type Chain struct {
-	SrcRpcUrl           string `yaml:"src_rpc_url"`
-	DestRpcUrl          string `yaml:"dest_rpc_url"`
+	WssRpcUrl           string `yaml:"wss_rpc_url"`
+	HttpRpcUrl          string `yaml:"http_rpc_url"`
 	PrivateKey          string `yaml:"private_key"`
 	Key                 *ecdsa.PrivateKey
 	ChainID             uint64 `yaml:"chain_id"`

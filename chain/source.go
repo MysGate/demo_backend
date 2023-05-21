@@ -18,20 +18,22 @@ import (
 )
 
 type SrcChainHandler struct {
-	Client          *ethclient.Client
+	Db              *xorm.Engine
+	WssClient       *ethclient.Client
+	HttpClient      *ethclient.Client
 	QuitListen      chan bool
 	ContractAddress common.Address
-	Db              *xorm.Engine
-	dispatcher      IDispatcher
+	disp            IDispatcher
 }
 
-func NewSrcChainHandler(client *ethclient.Client, addr common.Address, db *xorm.Engine, disp IDispatcher) *SrcChainHandler {
+func NewSrcChainHandler(wssClient *ethclient.Client, httpClient *ethclient.Client, addr common.Address, db *xorm.Engine, disp IDispatcher) *SrcChainHandler {
 	cch := &SrcChainHandler{
-		Client:          client,
+		WssClient:       wssClient,
+		HttpClient:      httpClient,
 		ContractAddress: addr,
 		QuitListen:      make(chan bool, 10),
 		Db:              db,
-		dispatcher:      disp,
+		disp:            disp,
 	}
 	return cch
 }
@@ -48,12 +50,11 @@ func (sch *SrcChainHandler) runListenEvent() {
 	}
 
 	logs := make(chan types.Log, 10000000)
-	sub, err := sch.Client.SubscribeFilterLogs(context.Background(), query, logs)
+	sub, err := sch.WssClient.SubscribeFilterLogs(context.Background(), query, logs)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-FOR:
 	for {
 		select {
 		case err := <-sub.Err():
@@ -61,11 +62,9 @@ FOR:
 		case vLog := <-logs:
 			sch.DispatchEvent(vLog)
 		case <-sch.QuitListen:
-			break FOR
+			return
 		}
 	}
-
-	util.Logger().Info("SrcChainHandler: exit listen event")
 }
 func (sch *SrcChainHandler) DispatchEvent(vLog types.Log) {
 	if vLog.Topics[0].Hex() != orderTopic {
@@ -77,30 +76,29 @@ func (sch *SrcChainHandler) DispatchEvent(vLog types.Log) {
 		return
 	}
 
-	sch.dispatcher.DispatchCrossChainOrder(order)
+	sch.disp.PayForDest(order)
 }
 
 func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*module.Order, bool) {
 	abiJson := ""
 	contractAbi, _ := abi.JSON(strings.NewReader(abiJson))
-	orderEvent := util.OrderEvent{}
-	err := contractAbi.UnpackIntoInterface(&orderEvent, "Order", vLog.Data)
+	orderEvent := &util.OrderEvent{}
+	err := contractAbi.UnpackIntoInterface(orderEvent, "Order", vLog.Data)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("[Order] failed to UnpackIntoInterface: %+v", err))
 		return nil, false
 	}
 
 	order := &module.Order{
-		SrcAddress:   orderEvent.SrcAddress.Hex(),
-		SrcAmount:    orderEvent.SrcAmount,
-		SrcToken:     orderEvent.SrcToken.Hex(),
-		DestAddress:  orderEvent.DestAddress.Hex(),
-		FinishedTime: time.Now(),
+		SrcAddress:  orderEvent.SrcAddress.Hex(),
+		SrcAmount:   util.ConvertTokenAmountToFloat64(orderEvent.SrcAmount, 18),
+		SrcToken:    orderEvent.SrcToken.Hex(),
+		DestAddress: orderEvent.DestAddress.Hex(),
+		Created:     time.Now(),
 	}
 
-	srcChainId, _ := sch.Client.NetworkID(context.Background())
-	order.SrcChainId = int(srcChainId.Int64())
+	srcChainId, _ := sch.HttpClient.NetworkID(context.Background())
+	order.SrcChainId = srcChainId.Uint64()
 	module.InsertOrder(order, sch.Db)
-	fmt.Println(vLog)
 	return order, true
 }

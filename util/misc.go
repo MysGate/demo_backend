@@ -36,3 +36,7 @@ func IsAnAddress(address string) bool {
 func IsValidTxHash(txHash string) bool {
 	return len(txHash) == core.TxHashFixedLength && txHash[:2] == "0x" && IsAlphanumeric(txHash)
 }
+
+func ConvertTokenAmountToFloat64(amt uint32, decimal int) float64 {
+	return 0.0
+}
