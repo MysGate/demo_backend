@@ -60,7 +60,7 @@ func (cm *ChainManager) start() {
 		}
 
 		wssClient := cm.createEthClient(cc.WssRpcUrl)
-		httpClient := cm.createEthClient(cc.WssRpcUrl)
+		httpClient := cm.createEthClient(cc.HttpRpcUrl)
 
 		cch := NewSrcChainHandler(wssClient, httpClient, cc.SrcAddr, cm.db, cm)
 		if _, ok := cm.handlers[cc.ChainID]; !ok {
