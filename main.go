@@ -40,8 +40,7 @@ func main() {
 	initLogger(c)
 
 	e := module.InitMySQLXorm(c.MySql.Uri, c.MySql.ShowSQL)
-	m := chain.NewChainManager(c, e)
-	m.StartChainManager()
+	m := chain.InitChainManager(c, e)
 	defer m.CloseChainManager()
 	util.Logger().Info("chain manager module start succeed!")
 

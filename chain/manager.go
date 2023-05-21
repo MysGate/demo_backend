@@ -29,7 +29,7 @@ type ChainManager struct {
 	msgChan  chan *message
 }
 
-func NewChainManager(cfg *conf.MysGateConfig, db *xorm.Engine) *ChainManager {
+func InitChainManager(cfg *conf.MysGateConfig, db *xorm.Engine) *ChainManager {
 	cm := &ChainManager{
 		cfg:      cfg,
 		db:       db,
@@ -38,6 +38,7 @@ func NewChainManager(cfg *conf.MysGateConfig, db *xorm.Engine) *ChainManager {
 		msgChan:  make(chan *message, 1000000),
 	}
 
+	cm.startChainManager()
 	return cm
 }
 
@@ -86,7 +87,7 @@ func (cm *ChainManager) start() {
 	}
 }
 
-func (cm *ChainManager) StartChainManager() {
+func (cm *ChainManager) startChainManager() {
 	cm.start()
 	go cm.messageLoop()
 }
