@@ -14,8 +14,8 @@ debug: true
 chains:
   - name: "zkSync Era"
     chain_id: 280
-    src_rpc_url: "wss://testnet.era.zksync.dev/ws"
-    dest_rpc_url: "https://testnet.era.zksync.dev"
+    wss_rpc_url: "wss://testnet.era.zksync.dev/ws"
+    http_rpc_url: "https://testnet.era.zksync.dev"
     src_contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
     dest_contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0" 
     private_key: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
@@ -23,8 +23,8 @@ chains:
       - "usdt"
   - name: "Scroll"
     chain_id: 534353
-    src_rpc_url: "https://alpha-rpc.scroll.io/l2"
-    dest_rpc_url: "https://alpha-rpc.scroll.io/l2"
+    wss_rpc_url: "https://alpha-rpc.scroll.io/l2"
+    http_rpc_url: "https://alpha-rpc.scroll.io/l2"
     src_contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
     dest_contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0" 
     private_key: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
