@@ -3,6 +3,7 @@ package model
 import (
 	"time"
 
+	"github.com/MysGate/demo_backend/core"
 	"github.com/go-xorm/xorm"
 )
 
@@ -53,7 +54,15 @@ func GetOrderList(src_chain_id int, dest_chain_id int, db *xorm.Engine) ([]Order
 }
 
 func UpdateOrderStatus(id int64, status int, db *xorm.Engine) error {
-	_, err := db.Table(GetOrderTableName()).ID(id).Update(&Order{Status: status})
+	order := &Order{
+		Status:  status,
+		Updated: time.Now(),
+	}
+	if status == core.Success {
+		order.FinishedTime = time.Now()
+	}
+
+	_, err := db.Table(GetOrderTableName()).ID(id).Update(order)
 	return err
 }
 

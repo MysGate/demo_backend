@@ -83,10 +83,12 @@ func (sch *SrcChainHandler) DispatchEvent(vLog types.Log) {
 func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*model.Order, bool) {
 	contractAbi, err := abi.JSON(strings.NewReader(string(contracts.CrossABI)))
 	if err != nil {
-		util.Logger().Error("Not found abi json")
+		util.Logger().Error(fmt.Sprintf("Not found abi json, err:%+v", err))
+		return nil, false
 	}
-	orderEvent := contracts.CrossControllerOrder{}
-	err = contractAbi.UnpackIntoInterface(&orderEvent, "Order", vLog.Data)
+
+	orderEvent := &contracts.CrossControllerOrder{}
+	err = contractAbi.UnpackIntoInterface(orderEvent, "Order", vLog.Data)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("[Order] failed to UnpackIntoInterface: %+v", err))
 		return nil, false
@@ -109,4 +111,9 @@ func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*model.Order, bool) {
 	order.SrcChainId = srcChainId.Uint64()
 	model.InsertOrder(order, sch.Db)
 	return order, true
+}
+
+func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
+	// TODO call crossController.sol::commitReceipt
+	return nil
 }
