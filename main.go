@@ -7,7 +7,7 @@ import (
 	"github.com/MysGate/demo_backend/chain"
 	"github.com/MysGate/demo_backend/conf"
 	"github.com/MysGate/demo_backend/model"
-	"github.com/MysGate/demo_backend/service"
+	"github.com/MysGate/demo_backend/rpc"
 	"github.com/MysGate/demo_backend/util"
 )
 
@@ -40,7 +40,7 @@ func main() {
 	defer m.CloseChainManager()
 	util.Logger().Info("chain manager module start succeed!")
 
-	s := service.NewHttpServer(c, e)
+	s := rpc.NewHttpServer(c, e)
 	s.RunHttpService()
 
 	util.Logger().Info("system shutdown")

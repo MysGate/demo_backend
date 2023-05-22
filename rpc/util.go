@@ -1,4 +1,4 @@
-package service
+package rpc
 
 import (
 	"github.com/MysGate/demo_backend/conf"
