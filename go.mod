@@ -8,7 +8,6 @@ require (
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/go-xorm/xorm v0.7.9
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/prometheus/common v0.39.0
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -40,6 +39,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

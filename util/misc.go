@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/MysGate/demo_backend/core"
+	"github.com/shopspring/decimal"
 )
 
 var IsAlphanumeric = regexp.MustCompile(`^[0-9a-zA-Z]+$`).MatchString
@@ -37,6 +38,9 @@ func IsValidTxHash(txHash string) bool {
 	return len(txHash) == core.TxHashFixedLength && txHash[:2] == "0x" && IsAlphanumeric(txHash)
 }
 
-func ConvertTokenAmountToFloat64(amt uint32, decimal int) float64 {
-	return 0.0
+func ConvertTokenAmountToFloat64(amt string, tokenDecimal int32) float64 {
+	amount, _ := decimal.NewFromString(amt)
+	amount_converted := amount.Div(decimal.New(1, tokenDecimal))
+	amountFloat, _ := amount_converted.Float64()
+	return amountFloat
 }
