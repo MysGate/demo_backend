@@ -93,10 +93,15 @@ func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*model.Order, bool) {
 	}
 
 	order := &model.Order{
+		ID:          orderEvent.OrderId.Int64(),
 		SrcAddress:  orderEvent.SrcAddress.Hex(),
 		SrcAmount:   util.ConvertTokenAmountToFloat64(orderEvent.SrcAmount.String(), 18),
 		SrcToken:    orderEvent.SrcToken.Hex(),
+		SrcChainId:  orderEvent.SrcChainId.Uint64(),
 		DestAddress: orderEvent.DestAddress.Hex(),
+		DestChainId: orderEvent.DestChainId.Uint64(),
+		DestToken:   orderEvent.DestAddress.Hex(),
+		PoterId:     orderEvent.PorterPool.Hex(),
 		Created:     time.Now(),
 	}
 

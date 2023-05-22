@@ -21,6 +21,7 @@ type Order struct {
 
 	DestChainId uint64  `xorm:"dest_chain_id" json:"dest_chain_id"`
 	DestAddress string  `xorm:"dest_address" json:"dest_address"`
+	DestToken   string  `xorm:"dest_token" json:"dest_token"`
 	DestAmount  float64 `xorm:"dest_amount" json:"dest_amount"`
 	DestTxHash  string  `xorm:"dest_tx_hash" json:"dest_tx_hash"`
 
