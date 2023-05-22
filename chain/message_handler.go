@@ -3,6 +3,7 @@ package chain
 import (
 	"fmt"
 
+	"github.com/MysGate/demo_backend/core"
 	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 )
@@ -47,13 +48,13 @@ func (cm *ChainManager) handlerPayForDest(order *model.Order) error {
 }
 
 func (cm *ChainManager) handlerGenerateZkproof(order *model.Order) error {
-	return nil
+	return model.UpdateOrderStatus(order.ID, core.Generate, cm.db)
 }
 
 func (cm *ChainManager) handlerVerifyZkproof(order *model.Order) error {
-	return nil
+	return model.UpdateOrderStatus(order.ID, core.Verify, cm.db)
 }
 
 func (cm *ChainManager) handlerOrderSucceed(order *model.Order) error {
-	return nil
+	return model.UpdateOrderStatus(order.ID, core.Success, cm.db)
 }

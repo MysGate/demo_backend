@@ -6,8 +6,8 @@ import (
 	"regexp"
 
 	"github.com/MysGate/demo_backend/core"
-	"github.com/shopspring/decimal"
 	"github.com/bwmarrin/snowflake"
+	"github.com/shopspring/decimal"
 )
 
 var IsAlphanumeric = regexp.MustCompile(`^[0-9a-zA-Z]+$`).MatchString

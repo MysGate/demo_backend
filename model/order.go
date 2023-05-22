@@ -52,6 +52,11 @@ func GetOrderList(src_chain_id int, dest_chain_id int, db *xorm.Engine) ([]Order
 	return orders, err
 }
 
+func UpdateOrderStatus(id int64, status int, db *xorm.Engine) error {
+	_, err := db.Table(GetOrderTableName()).ID(id).Update(&Order{Status: status})
+	return err
+}
+
 func InsertOrder(order *Order, db *xorm.Engine) error {
 	_, err := db.Table(GetOrderTableName()).Insert(order)
 	return err
