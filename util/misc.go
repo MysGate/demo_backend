@@ -7,6 +7,7 @@ import (
 
 	"github.com/MysGate/demo_backend/core"
 	"github.com/shopspring/decimal"
+	"github.com/bwmarrin/snowflake"
 )
 
 var IsAlphanumeric = regexp.MustCompile(`^[0-9a-zA-Z]+$`).MatchString
@@ -43,4 +44,16 @@ func ConvertTokenAmountToFloat64(amt string, tokenDecimal int32) float64 {
 	amount_converted := amount.Div(decimal.New(1, tokenDecimal))
 	amountFloat, _ := amount_converted.Float64()
 	return amountFloat
+}
+
+func GenerateIncreaseID() (int64, error) {
+	node, err := snowflake.NewNode(1)
+	if err != nil {
+		Logger().Error(fmt.Sprintf("GenerateIncreaseID err:%+v", err))
+		return 0, err
+	}
+	// Generate a snowflake ID.
+	id := node.Generate()
+
+	return id.Int64(), nil
 }
