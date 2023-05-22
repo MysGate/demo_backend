@@ -58,10 +58,20 @@ func UpdateOrderStatus(id int64, status int, db *xorm.Engine) error {
 		Status:  status,
 		Updated: time.Now(),
 	}
+
 	if status == core.Success {
 		order.FinishedTime = time.Now()
 	}
 
+	_, err := db.Table(GetOrderTableName()).ID(id).Update(order)
+	return err
+}
+
+func UpdateOrderProof(id int64, proof string, db *xorm.Engine) error {
+	order := &Order{
+		Proof:   proof,
+		Updated: time.Now(),
+	}
 	_, err := db.Table(GetOrderTableName()).ID(id).Update(order)
 	return err
 }

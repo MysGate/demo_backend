@@ -114,6 +114,17 @@ func (cm *ChainManager) handlerVerifyZkproof(order *model.Order) error {
 		return err
 	}
 
+	err = model.UpdateOrderProof(order.ID, order.Proof, cm.db)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("handlerVerifyZkproof update db err:%+v", err))
+		return err
+	}
+
+	err = cm.OrderSucceed(order)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("handlerVerifyZkproof err:%+v", err))
+		return err
+	}
 	return nil
 }
 

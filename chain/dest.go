@@ -62,6 +62,6 @@ func (dest *DestChainHandler) crossFrom(order *model.Order) error {
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
 
-	//TODO contract call
+	//TODO call contract crossController.sol::crossFrom
 	return nil
 }
