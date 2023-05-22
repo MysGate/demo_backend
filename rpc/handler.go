@@ -88,6 +88,22 @@ func (s *Server) getPorters(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+func (s *Server) getNextOrderID(c *gin.Context) {
+	var nextOrderId int64
+	var err error
+	for times := 0; times < 3; times++ {
+		nextOrderId, err = util.GenerateIncreaseID()
+		if err == nil {
+			break
+		}
+	}
+
+	resp := &model.NextIDResp{
+		NextOrderID: nextOrderId,
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 func (s *Server) getCost(c *gin.Context) {
 	req := model.CostReq{}
 	err := c.ShouldBind(&req)
