@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MysGate/demo_backend/contracts"
 	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum"
@@ -80,10 +81,12 @@ func (sch *SrcChainHandler) DispatchEvent(vLog types.Log) {
 }
 
 func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*model.Order, bool) {
-	abiJson := ""
-	contractAbi, _ := abi.JSON(strings.NewReader(abiJson))
-	orderEvent := &util.OrderEvent{}
-	err := contractAbi.UnpackIntoInterface(orderEvent, "Order", vLog.Data)
+	contractAbi, err := abi.JSON(strings.NewReader(string(contracts.CrossABI)))
+	if err != nil {
+		util.Logger().Error("Not found abi json")
+	}
+	orderEvent := contracts.CrossControllerOrder{}
+	err = contractAbi.UnpackIntoInterface(&orderEvent, "Order", vLog.Data)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("[Order] failed to UnpackIntoInterface: %+v", err))
 		return nil, false
@@ -91,7 +94,7 @@ func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*model.Order, bool) {
 
 	order := &model.Order{
 		SrcAddress:  orderEvent.SrcAddress.Hex(),
-		SrcAmount:   util.ConvertTokenAmountToFloat64(orderEvent.SrcAmount, 18),
+		SrcAmount:   util.ConvertTokenAmountToFloat64(orderEvent.SrcAmount.String(), 18),
 		SrcToken:    orderEvent.SrcToken.Hex(),
 		DestAddress: orderEvent.DestAddress.Hex(),
 		Created:     time.Now(),
