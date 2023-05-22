@@ -52,6 +52,28 @@ func (cm *ChainManager) createEthClient(rpc string) *ethclient.Client {
 	return conn
 }
 
+func (cm *ChainManager) initEthClient(chanid uint64, wss, http string) *Connection {
+	conn, ok := cm.clients[chanid]
+	if !ok || conn == nil {
+		co := &Connection{
+			HttpClient: cm.createEthClient(http),
+			WssClient:  cm.createEthClient(wss),
+		}
+		cm.clients[chanid] = co
+		return co
+	}
+
+	if conn.HttpClient == nil {
+		conn.HttpClient = cm.createEthClient(http)
+	}
+
+	if conn.WssClient == nil {
+		conn.WssClient = cm.createEthClient(wss)
+	}
+
+	return conn
+}
+
 func (cm *ChainManager) start() {
 	for src, dests := range cm.cfg.SupportCrossChain {
 		cc := cm.cfg.FindCrossChain(src)
@@ -60,10 +82,8 @@ func (cm *ChainManager) start() {
 			continue
 		}
 
-		wssClient := cm.createEthClient(cc.WssRpcUrl)
-		httpClient := cm.createEthClient(cc.HttpRpcUrl)
-
-		cch := NewSrcChainHandler(wssClient, httpClient, cc.SrcAddr, cm.db, cm)
+		conn := cm.initEthClient(cc.ChainID, cc.WssRpcUrl, cc.HttpRpcUrl)
+		cch := NewSrcChainHandler(conn.WssClient, conn.HttpClient, cc.SrcAddr, cm.db, cm)
 		if _, ok := cm.handlers[cc.ChainID]; !ok {
 			ch := &ChainHandler{
 				src:  cch,
@@ -78,8 +98,9 @@ func (cm *ChainManager) start() {
 				util.Logger().Error(fmt.Sprintf("chain manager find crosschain err:%+v ", cc))
 				continue
 			}
-			destClient := cm.createEthClient(cd.HttpRpcUrl)
-			ccd := NewDestChainHandler(destClient, cd.DestAddr, cd.Key)
+
+			conn := cm.initEthClient(cd.ChainID, cd.WssRpcUrl, cd.HttpRpcUrl)
+			ccd := NewDestChainHandler(conn.HttpClient, cd.DestAddr, cd.Key)
 			cm.handlers[cc.ChainID].dest[cd.ChainID] = ccd
 		}
 

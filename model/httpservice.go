@@ -46,6 +46,10 @@ type CostResp struct {
 	FloatFee  float64 `json:"float_fee"`
 }
 
+type NextIDResp struct {
+	NextOrderID int64 `json:"next_order_id"`
+}
+
 func GetMessage(m string) *Message {
 	msg := &Message{
 		Message: m,
