@@ -8,7 +8,7 @@ import (
 )
 
 type Order struct {
-	ID         int64   `xorm:"'id' pk autoincr"`
+	ID         int64   `xorm:"'id' pk autoincr" json:"order_id"`
 	PoterId    string  `xorm:"poter_id" json:"poter_id"`
 	SrcChainId uint64  `xorm:"src_chain_id" json:"src_chain_id"`
 	SrcAddress string  `xorm:"src_address" json:"src_address"`
@@ -39,13 +39,13 @@ func (o *Order) TableName() string {
 	return GetOrderTableName()
 }
 
-func GetOrder(orderId int, db *xorm.Engine) (bool, *Order) {
+func GetOrder(orderId int64, db *xorm.Engine) (bool, *Order) {
 	order := &Order{}
 	has, _ := db.Table(GetOrderTableName()).ID(orderId).Get(&order)
 	return has, order
 }
 
-func GetOrderList(src_chain_id int, dest_chain_id int, db *xorm.Engine) ([]Order, error) {
+func GetOrderList(src_chain_id uint64, dest_chain_id uint64, db *xorm.Engine) ([]Order, error) {
 	orders := make([]Order, 0)
 	err := db.Table(GetOrderTableName()).
 		Where("src_chain_id = ?", src_chain_id).
