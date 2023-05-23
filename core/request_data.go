@@ -13,10 +13,10 @@ type TradeRequest struct {
 }
 
 type OrderSearchRequest struct {
-	OrderId int `form:"order_id" json:"order_id" binding:"required"`
+	OrderId int64 `form:"order_id" json:"order_id" binding:"required"`
 }
 
 type OrderListRequest struct {
-	SrcChainId  int `form:"src_chain_id" json:"src_chain_id" binding:"required"`
-	DestChainId int `form:"dest_chain_id" json:"dest_chain_id" binding:"required"`
+	SrcChainId  uint64 `form:"src_chain_id" json:"src_chain_id" binding:"required"`
+	DestChainId uint64 `form:"dest_chain_id" json:"dest_chain_id" binding:"required"`
 }
