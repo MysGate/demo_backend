@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"regexp"
 
@@ -20,6 +21,23 @@ func ConvertHexToDecimalInStringFormat(hexString string) string {
 	//i.SetString(hexString, 16)
 
 	return fmt.Sprintf("%v", i)
+}
+
+func ConvertFloat64ToTokenAmount(amount float64, decimals int) *big.Int {
+	bigval := new(big.Float)
+	bigval.SetFloat64(amount)
+
+	fp := math.Pow10(decimals)
+
+	coin := new(big.Float)
+	coin.SetInt(big.NewInt(int64(fp)))
+	bigval.Mul(bigval, coin)
+
+	result := new(big.Int)
+	f, _ := bigval.Uint64()
+	result.SetUint64(f)
+
+	return result
 }
 
 func PadLeft(str, pad string, length int) string {
