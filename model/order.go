@@ -17,7 +17,7 @@ type Order struct {
 	SrcTxHash  string  `xorm:"src_tx_hash" json:"src_tx_hash"`
 
 	FixedFee float64 `xorm:"fixed_fee" json:"fixed_fee"`
-	FeeRate  float64 `xorm:"fee_rate" json:"fee_rate"`
+	FloatFee float64 `xorm:"float_fee" json:"float_fee"`
 	TotalFee float64 `xorm:"total_fee" json:"total_fee"`
 
 	DestChainId uint64  `xorm:"dest_chain_id" json:"dest_chain_id"`

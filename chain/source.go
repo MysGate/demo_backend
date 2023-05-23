@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/MysGate/demo_backend/contracts"
+	"github.com/MysGate/demo_backend/core"
 	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum"
@@ -43,7 +43,7 @@ func (sch *SrcChainHandler) close() {
 	sch.QuitListen <- true
 }
 
-var orderTopic string = util.GetOrderTopic()
+var orderCrossToTopic string = util.GetCrossToTopic()
 
 func (sch *SrcChainHandler) runListenEvent() {
 	query := ethereum.FilterQuery{
@@ -68,10 +68,10 @@ func (sch *SrcChainHandler) runListenEvent() {
 	}
 }
 func (sch *SrcChainHandler) DispatchEvent(vLog types.Log) {
-	if vLog.Topics[0].Hex() != orderTopic {
+	if vLog.Topics[0].Hex() != orderCrossToTopic {
 		return
 	}
-	order, succeed := sch.parseEvent(vLog)
+	order, succeed := sch.parseCrossToEvent(vLog)
 	if !succeed || order == nil {
 		util.Logger().Error(fmt.Sprintf("DispatchEvent parseEvent failed: %+v", vLog))
 		return
@@ -80,32 +80,36 @@ func (sch *SrcChainHandler) DispatchEvent(vLog types.Log) {
 	sch.disp.PayForDest(order)
 }
 
-func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*model.Order, bool) {
+func (sch *SrcChainHandler) parseCrossToEvent(vLog types.Log) (*model.Order, bool) {
 	contractAbi, err := abi.JSON(strings.NewReader(string(contracts.CrossABI)))
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("Not found abi json, err:%+v", err))
 		return nil, false
 	}
 
-	orderEvent := &contracts.CrossControllerOrder{}
-	err = contractAbi.UnpackIntoInterface(orderEvent, "Order", vLog.Data)
+	orderEvent := &contracts.CrossCrossTo{}
+	err = contractAbi.UnpackIntoInterface(orderEvent, "CrossFrom", vLog.Data)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("[Order] failed to UnpackIntoInterface: %+v", err))
 		return nil, false
 	}
 
 	order := &model.Order{
-		ID:          orderEvent.OrderId.Int64(),
-		SrcAddress:  orderEvent.SrcAddress.Hex(),
-		SrcAmount:   util.ConvertTokenAmountToFloat64(orderEvent.SrcAmount.String(), 18),
-		SrcToken:    orderEvent.SrcToken.Hex(),
-		SrcChainId:  orderEvent.SrcChainId.Uint64(),
-		DestAddress: orderEvent.DestAddress.Hex(),
-		DestChainId: orderEvent.DestChainId.Uint64(),
-		DestToken:   orderEvent.DestAddress.Hex(),
-		PoterId:     orderEvent.PorterPool.Hex(),
-		Created:     time.Now(),
+		ID:          orderEvent.Order.OrderId.Int64(),
+		SrcAddress:  orderEvent.Order.SrcAddress.Hex(),
+		SrcAmount:   util.ConvertTokenAmountToFloat64(orderEvent.Order.SrcAmount.String(), 18),
+		SrcToken:    orderEvent.Order.SrcToken.Hex(),
+		SrcChainId:  orderEvent.Order.SrcChainId.Uint64(),
+		DestAddress: orderEvent.Order.DestAddress.Hex(),
+		DestChainId: orderEvent.Order.DestChainId.Uint64(),
+		DestToken:   orderEvent.Order.DestAddress.Hex(),
+		DestAmount:  util.ConvertTokenAmountToFloat64(orderEvent.CrossAmount.String(), 18),
+		PoterId:     orderEvent.Order.PorterPool.Hex(),
+		FixedFee:    util.ConvertTokenAmountToFloat64(orderEvent.FixedFeeAmount.String(), 18),
+		FloatFee:    util.ConvertTokenAmountToFloat64(orderEvent.FloatFeeAmount.String(), 18),
+		Status:      core.CrossTo,
 	}
+	order.TotalFee = order.FixedFee + order.FloatFee
 
 	srcChainId, _ := sch.HttpClient.NetworkID(context.Background())
 	order.SrcChainId = srcChainId.Uint64()
