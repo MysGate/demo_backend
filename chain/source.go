@@ -193,7 +193,7 @@ func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
 		return err
 	}
 
-	order.CommitReceiptTxHash = tx.Hash().Hex()
+	order.ReceiptTxHash = tx.Hash().Hex()
 
 	return nil
 }

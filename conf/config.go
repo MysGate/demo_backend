@@ -175,18 +175,6 @@ func (c *MysGateConfig) GetCoinLimit(coin string) *CoinAmountLimit {
 	return cal
 }
 
-// func (c *MysGateConfig) CloseClient() {
-// 	for _, v := range c.SupportChains {
-// 		if v.SrcClient != nil {
-// 			v.SrcClient.Close()
-// 		}
-
-// 		if v.DestClient != nil {
-// 			v.DestClient.Close()
-// 		}
-// 	}
-// }
-
 func ParseYaml(configFile string) error {
 	yamlFile, err := ioutil.ReadFile(configFile)
 	if err != nil {

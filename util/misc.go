@@ -34,8 +34,7 @@ func ConvertFloat64ToTokenAmount(amount float64, decimals int) *big.Int {
 	bigval.Mul(bigval, coin)
 
 	result := new(big.Int)
-	f, _ := bigval.Uint64()
-	result.SetUint64(f)
+	bigval.Int(result) // store converted number in result
 
 	return result
 }
