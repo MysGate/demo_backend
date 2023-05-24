@@ -2,8 +2,10 @@ package chain
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"fmt"
 	"log"
+	"math/big"
 	"strings"
 	"time"
 
@@ -12,30 +14,45 @@ import (
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/go-xorm/xorm"
 )
 
 type SrcChainHandler struct {
 	Db              *xorm.Engine
+	PrivKey         *ecdsa.PrivateKey
 	WssClient       *ethclient.Client
 	HttpClient      *ethclient.Client
 	QuitListen      chan bool
 	ContractAddress common.Address
+	Caller          common.Address
 	disp            IDispatcher
 }
 
-func NewSrcChainHandler(wssClient *ethclient.Client, httpClient *ethclient.Client, addr common.Address, db *xorm.Engine, disp IDispatcher) *SrcChainHandler {
+func NewSrcChainHandler(wssClient *ethclient.Client, httpClient *ethclient.Client, addr common.Address, key *ecdsa.PrivateKey, db *xorm.Engine, disp IDispatcher) *SrcChainHandler {
 	cch := &SrcChainHandler{
 		WssClient:       wssClient,
 		HttpClient:      httpClient,
+		PrivKey:         key,
 		ContractAddress: addr,
 		QuitListen:      make(chan bool, 10),
 		Db:              db,
 		disp:            disp,
 	}
+
+	publicKey := key.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		util.Logger().Error("NewDestChainHandler key err")
+		return nil
+	}
+
+	caller := crypto.PubkeyToAddress(*publicKeyECDSA)
+	cch.Caller = caller
 	return cch
 }
 
@@ -114,6 +131,65 @@ func (sch *SrcChainHandler) parseEvent(vLog types.Log) (*model.Order, bool) {
 }
 
 func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
-	// TODO call crossController.sol::commitReceipt
+	nonce, err := sch.HttpClient.PendingNonceAt(context.Background(), sch.Caller)
+	if err != nil {
+		errMsg := fmt.Sprintf("commitReceipt:sch.HttpClient.PendingNonceAt err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	gasPrice, err := sch.HttpClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		errMsg := fmt.Sprintf("commitReceipt:sch.HttpClient.SuggestGasPrice err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	srcChainID := big.NewInt(int64(order.SrcChainId))
+	opts, err := bind.NewKeyedTransactorWithChainID(sch.PrivKey, srcChainID)
+	if err != nil {
+		errMsg := fmt.Sprintf("commitReceipt:NewKeyedTransactorWithChainID err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	opts.Nonce = big.NewInt(int64(nonce))
+	opts.Value = big.NewInt(0)     // in wei
+	opts.GasLimit = uint64(300000) // in units
+	opts.GasPrice = gasPrice
+
+	instance, err := contracts.NewCrossTransactor(sch.ContractAddress, sch.HttpClient)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("commitReceipt: create instance err:%+v", err))
+		return err
+	}
+
+	contractOrder := &contracts.CrossControllerOrder{
+		OrderId:     big.NewInt(order.ID),
+		SrcChainId:  new(big.Int).SetUint64(order.SrcChainId),
+		SrcAddress:  common.HexToAddress(order.SrcAddress),
+		SrcToken:    common.HexToAddress(order.SrcToken),
+		SrcAmount:   util.ConvertFloat64ToTokenAmount(order.SrcAmount, 18),
+		DestChainId: new(big.Int).SetUint64(order.DestChainId),
+		DestAddress: common.HexToAddress(order.DestAddress),
+		DestToken:   common.HexToAddress(order.DestToken),
+		PorterPool:  common.HexToAddress(order.PoterId),
+	}
+	orderHash := model.Keccak256EncodePackedContractOrder(contractOrder)
+
+	hash := common.HexToHash(order.DestTxHash)
+	receipt := &contracts.CrossControllerReceipt{}
+	copy(receipt.DestTxHash[:], hash.Bytes())
+	// TODO add proof
+	// receipt.Proof
+	tx, err := instance.CommitReceipt(opts, orderHash, *receipt)
+	if err != nil {
+		errMsg := fmt.Sprintf("commitReceipt:instance.CommitReceipt err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	order.CommitReceiptTxHash = tx.Hash().Hex()
+
 	return nil
 }

@@ -3,9 +3,29 @@ package model
 import (
 	"time"
 
+	"github.com/MysGate/demo_backend/contracts"
 	"github.com/MysGate/demo_backend/core"
+	"github.com/MysGate/demo_backend/util"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/go-xorm/xorm"
 )
+
+func Keccak256EncodePackedContractOrder(co *contracts.CrossControllerOrder) (orderHash [32]byte) {
+	result := util.EncodePacked(
+		util.EncodeBigInt(co.OrderId),
+		util.EncodeBigInt(co.SrcChainId),
+		util.EncodeAddress(co.SrcAddress),
+		util.EncodeAddress(co.SrcToken),
+		util.EncodeBigInt(co.SrcAmount),
+		util.EncodeBigInt(co.DestChainId),
+		util.EncodeAddress(co.DestAddress),
+		util.EncodeAddress(co.DestToken),
+		util.EncodeAddress(co.PorterPool),
+	)
+	hash := crypto.Keccak256Hash(result)
+	copy(orderHash[:], hash.Bytes())
+	return
+}
 
 type Order struct {
 	ID         int64   `xorm:"'id' pk autoincr" json:"order_id"`
@@ -26,7 +46,8 @@ type Order struct {
 	DestAmount  float64 `xorm:"dest_amount" json:"dest_amount"`
 	DestTxHash  string  `xorm:"dest_tx_hash" json:"dest_tx_hash"`
 
-	Proof string `xorm:"proof" json:"proof"`
+	Proof               string `xorm:"proof" json:"proof"`
+	CommitReceiptTxHash string `xorm:"commit_receipt_tx_hash" json:"commit_receipt_tx_hash"`
 
 	Created      time.Time `xorm:"created" json:"created"`
 	FinishedTime time.Time `xorm:"finished_time" json:"finish_time"`
@@ -64,6 +85,16 @@ func UpdateOrderStatus(id int64, status int, db *xorm.Engine) error {
 	}
 
 	_, err := db.Table(GetOrderTableName()).ID(id).Update(order)
+	return err
+}
+
+func UpdateOrderDestTxHash(order *Order, db *xorm.Engine) error {
+	o := &Order{
+		DestTxHash: order.DestTxHash,
+		Updated:    time.Now(),
+	}
+
+	_, err := db.Table(GetOrderTableName()).ID(order.ID).Update(o)
 	return err
 }
 
