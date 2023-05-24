@@ -29,17 +29,15 @@ type MySQL struct {
 }
 
 type Chain struct {
-	WssRpcUrl           string `yaml:"wss_rpc_url"`
-	HttpRpcUrl          string `yaml:"http_rpc_url"`
-	PrivateKey          string `yaml:"private_key"`
-	Key                 *ecdsa.PrivateKey
-	ChainID             uint64 `yaml:"chain_id"`
-	SrcContractAddress  string `yaml:"src_contract_address"`
-	DestContractAddress string `yaml:"dest_contract_address"`
-	SrcAddr             common.Address
-	DestAddr            common.Address
-	Name                string   `yaml:"name"`
-	SuppirtCoins        []string `yaml:"support_coins"`
+	WssRpcUrl       string `yaml:"wss_rpc_url"`
+	HttpRpcUrl      string `yaml:"http_rpc_url"`
+	PrivateKey      string `yaml:"private_key"`
+	Key             *ecdsa.PrivateKey
+	ChainID         uint64 `yaml:"chain_id"`
+	ContractAddress string `yaml:"contract_address"`
+	ContractAddr    common.Address
+	Name            string   `yaml:"name"`
+	SuppirtCoins    []string `yaml:"support_coins"`
 }
 
 type CrossChain struct {
@@ -103,9 +101,7 @@ func initChain(s *Chain) {
 	}
 
 	s.Key = privateKey
-	s.SrcAddr = common.HexToAddress(s.SrcContractAddress)
-	s.DestAddr = common.HexToAddress(s.DestContractAddress)
-
+	s.ContractAddr = common.HexToAddress(s.ContractAddress)
 }
 
 func (c *MysGateConfig) initConfig() {
