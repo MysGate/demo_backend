@@ -105,7 +105,7 @@ func (sch *SrcChainHandler) parseCrossToEvent(vLog types.Log) (*model.Order, boo
 	}
 
 	orderEvent := &contracts.CrossCrossTo{}
-	err = contractAbi.UnpackIntoInterface(orderEvent, "CrossFrom", vLog.Data)
+	err = contractAbi.UnpackIntoInterface(orderEvent, "CrossTo", vLog.Data)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("[Order] failed to UnpackIntoInterface: %+v", err))
 		return nil, false
