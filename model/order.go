@@ -28,7 +28,8 @@ func Keccak256EncodePackedContractOrder(co *contracts.CrossControllerOrder) (ord
 }
 
 type Order struct {
-	ID         int64   `xorm:"'id' pk autoincr" json:"order_id"`
+	ID         int64   `xorm:"'id' pk autoincr" json:"id"`
+	ExternalID string  `xorm:"external_id" json:"external_id"`
 	PoterId    string  `xorm:"poter_id" json:"poter_id"`
 	SrcChainId uint64  `xorm:"src_chain_id" json:"src_chain_id"`
 	SrcAddress string  `xorm:"src_address" json:"src_address"`
@@ -40,14 +41,16 @@ type Order struct {
 	FloatFee float64 `xorm:"float_fee" json:"float_fee"`
 	TotalFee float64 `xorm:"total_fee" json:"total_fee"`
 
-	DestChainId uint64  `xorm:"dest_chain_id" json:"dest_chain_id"`
-	DestAddress string  `xorm:"dest_address" json:"dest_address"`
-	DestToken   string  `xorm:"dest_token" json:"dest_token"`
-	DestAmount  float64 `xorm:"dest_amount" json:"dest_amount"`
-	DestTxHash  string  `xorm:"dest_tx_hash" json:"dest_tx_hash"`
+	DestChainId  uint64  `xorm:"dest_chain_id" json:"dest_chain_id"`
+	DestAddress  string  `xorm:"dest_address" json:"dest_address"`
+	DestToken    string  `xorm:"dest_token" json:"dest_token"`
+	DestAmount   float64 `xorm:"dest_amount" json:"dest_amount"`
+	DestTxHash   string  `xorm:"dest_tx_hash" json:"dest_tx_hash"`
+	DestTxStatus int     `xorm:"dest_tx_status" json:"dest_tx_status"`
 
-	Proof               string `xorm:"proof" json:"proof"`
-	CommitReceiptTxHash string `xorm:"commit_receipt_tx_hash" json:"commit_receipt_tx_hash"`
+	Proof           string `xorm:"proof" json:"proof"`
+	ReceiptTxHash   string `xorm:"receipt_tx_hash" json:"receipt_tx_hash"`
+	ReceiptTxStatus int    `xorm:"receipt_tx_status" json:"receipt_tx_status"`
 
 	Created      time.Time `xorm:"created" json:"created"`
 	FinishedTime time.Time `xorm:"finished_time" json:"finish_time"`
