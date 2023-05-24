@@ -57,6 +57,13 @@ func (cm *ChainManager) handlerPayForDest(order *model.Order) error {
 		util.Logger().Error(errMsg)
 		return err
 	}
+
+	err = model.UpdateOrderDestTxHash(order, cm.db)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("handlerPayForDest update db err:%+v", err))
+		return err
+	}
+
 	return nil
 }
 

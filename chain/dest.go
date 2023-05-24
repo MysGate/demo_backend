@@ -75,7 +75,7 @@ func (dest *DestChainHandler) crossFrom(order *model.Order) error {
 		util.Logger().Error(fmt.Sprintf("crossFrom: create instance err:%+v", err))
 		return err
 	}
-	o := contracts.CrossControllerOrder{
+	o := &contracts.CrossControllerOrder{
 		OrderId:     big.NewInt(order.ID),
 		SrcChainId:  big.NewInt(int64(order.SrcChainId)),
 		SrcAddress:  common.HexToAddress(order.SrcAddress),
@@ -87,7 +87,7 @@ func (dest *DestChainHandler) crossFrom(order *model.Order) error {
 		PorterPool:  common.HexToAddress(order.PoterId),
 	}
 	destAmount := util.ConvertFloat64ToTokenAmount(order.DestAmount, 18)
-	tx, err := instance.CrossFrom(opts, o, 18, destAmount)
+	tx, err := instance.CrossFrom(opts, *o, 18, destAmount)
 	if err != nil {
 		errMsg := fmt.Sprintf("crossFrom:instance.CrossFrom err: %+v", err)
 		util.Logger().Error(errMsg)
