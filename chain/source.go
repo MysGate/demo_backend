@@ -112,7 +112,7 @@ func (sch *SrcChainHandler) parseCrossToEvent(vLog types.Log) (*model.Order, boo
 	}
 
 	order := &model.Order{
-		ID:          orderEvent.Order.OrderId.Int64(),
+		ID:          orderEvent.Order.OrderId.String(),
 		SrcAddress:  orderEvent.Order.SrcAddress.Hex(),
 		SrcAmount:   util.ConvertTokenAmountToFloat64(orderEvent.Order.SrcAmount.String(), 18),
 		SrcToken:    orderEvent.Order.SrcToken.Hex(),
@@ -126,7 +126,6 @@ func (sch *SrcChainHandler) parseCrossToEvent(vLog types.Log) (*model.Order, boo
 		FloatFee:    util.ConvertTokenAmountToFloat64(orderEvent.FloatFeeAmount.String(), 18),
 		Status:      core.CrossTo,
 	}
-	order.TotalFee = order.FixedFee + order.FloatFee
 
 	srcChainId, _ := sch.HttpClient.NetworkID(context.Background())
 	order.SrcChainId = srcChainId.Uint64()
@@ -167,9 +166,9 @@ func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
 		util.Logger().Error(fmt.Sprintf("commitReceipt: create instance err:%+v", err))
 		return err
 	}
-
+	orderId, _ := new(big.Int).SetString(order.ID, 10)
 	contractOrder := &contracts.CrossControllerOrder{
-		OrderId:     big.NewInt(order.ID),
+		OrderId:     orderId,
 		SrcChainId:  new(big.Int).SetUint64(order.SrcChainId),
 		SrcAddress:  common.HexToAddress(order.SrcAddress),
 		SrcToken:    common.HexToAddress(order.SrcToken),

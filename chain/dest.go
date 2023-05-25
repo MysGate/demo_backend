@@ -75,8 +75,9 @@ func (dest *DestChainHandler) crossFrom(order *model.Order) error {
 		util.Logger().Error(fmt.Sprintf("crossFrom: create instance err:%+v", err))
 		return err
 	}
+	orderId, _ := new(big.Int).SetString(order.ID, 10)
 	o := &contracts.CrossControllerOrder{
-		OrderId:     big.NewInt(order.ID),
+		OrderId:     orderId,
 		SrcChainId:  big.NewInt(int64(order.SrcChainId)),
 		SrcAddress:  common.HexToAddress(order.SrcAddress),
 		SrcToken:    common.HexToAddress(order.SrcToken),

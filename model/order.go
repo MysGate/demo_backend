@@ -28,8 +28,7 @@ func Keccak256EncodePackedContractOrder(co *contracts.CrossControllerOrder) (ord
 }
 
 type Order struct {
-	ID         int64   `xorm:"'id' pk autoincr" json:"id"`
-	ExternalID string  `xorm:"external_id" json:"external_id"`
+	ID         string  `xorm:"'id' pk autoincr" json:"id"`
 	PoterId    string  `xorm:"poter_id" json:"poter_id"`
 	SrcChainId uint64  `xorm:"src_chain_id" json:"src_chain_id"`
 	SrcAddress string  `xorm:"src_address" json:"src_address"`
@@ -39,7 +38,6 @@ type Order struct {
 
 	FixedFee float64 `xorm:"fixed_fee" json:"fixed_fee"`
 	FloatFee float64 `xorm:"float_fee" json:"float_fee"`
-	TotalFee float64 `xorm:"total_fee" json:"total_fee"`
 
 	DestChainId  uint64  `xorm:"dest_chain_id" json:"dest_chain_id"`
 	DestAddress  string  `xorm:"dest_address" json:"dest_address"`
@@ -77,7 +75,7 @@ func GetOrderList(src_chain_id uint64, dest_chain_id uint64, db *xorm.Engine) ([
 	return orders, err
 }
 
-func UpdateOrderStatus(id int64, status int, db *xorm.Engine) error {
+func UpdateOrderStatus(id string, status int, db *xorm.Engine) error {
 	order := &Order{
 		Status:  status,
 		Updated: time.Now(),
@@ -101,7 +99,7 @@ func UpdateOrderDestTxHash(order *Order, db *xorm.Engine) error {
 	return err
 }
 
-func UpdateOrderProof(id int64, proof string, db *xorm.Engine) error {
+func UpdateOrderProof(id string, proof string, db *xorm.Engine) error {
 	order := &Order{
 		Proof:   proof,
 		Updated: time.Now(),
