@@ -4,15 +4,14 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"log"
 	"math/big"
 	"strings"
 
 	"github.com/MysGate/demo_backend/contracts"
 	"github.com/MysGate/demo_backend/core"
 	"github.com/MysGate/demo_backend/model"
+	"github.com/MysGate/demo_backend/pubsub"
 	"github.com/MysGate/demo_backend/util"
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -31,9 +30,10 @@ type SrcChainHandler struct {
 	ContractAddress common.Address
 	Caller          common.Address
 	disp            IDispatcher
+	keys            []string
 }
 
-func NewSrcChainHandler(wssClient *ethclient.Client, httpClient *ethclient.Client, addr common.Address, key *ecdsa.PrivateKey, db *xorm.Engine, disp IDispatcher) *SrcChainHandler {
+func NewSrcChainHandler(wssClient *ethclient.Client, httpClient *ethclient.Client, addr common.Address, key *ecdsa.PrivateKey, db *xorm.Engine, disp IDispatcher, keys []string) *SrcChainHandler {
 	cch := &SrcChainHandler{
 		WssClient:       wssClient,
 		HttpClient:      httpClient,
@@ -42,6 +42,7 @@ func NewSrcChainHandler(wssClient *ethclient.Client, httpClient *ethclient.Clien
 		QuitListen:      make(chan bool, 10),
 		Db:              db,
 		disp:            disp,
+		keys:            keys,
 	}
 
 	publicKey := key.Public()
@@ -63,20 +64,14 @@ func (sch *SrcChainHandler) close() {
 var orderCrossToTopic string = util.GetCrossToTopic()
 
 func (sch *SrcChainHandler) runListenEvent() {
-	query := ethereum.FilterQuery{
-		Addresses: []common.Address{sch.ContractAddress},
-	}
-
-	logs := make(chan types.Log, 10000000)
-	sub, err := sch.WssClient.SubscribeFilterLogs(context.Background(), query, logs)
-	if err != nil {
-		log.Fatal(err)
+	logs := make(chan interface{}, 10000000)
+	m := pubsub.GetSubscribeManager()
+	for _, k := range sch.keys {
+		m.AddSubscribe(k, logs)
 	}
 
 	for {
 		select {
-		case err := <-sub.Err():
-			log.Fatal(err)
 		case vLog := <-logs:
 			sch.DispatchEvent(vLog)
 		case <-sch.QuitListen:
@@ -84,7 +79,13 @@ func (sch *SrcChainHandler) runListenEvent() {
 		}
 	}
 }
-func (sch *SrcChainHandler) DispatchEvent(vLog types.Log) {
+func (sch *SrcChainHandler) DispatchEvent(v interface{}) {
+	vLog, ok := v.(*types.Log)
+	if !ok {
+		util.Logger().Error("DispatchEvent input type mismatch")
+		return
+	}
+
 	if vLog.Topics[0].Hex() != orderCrossToTopic {
 		return
 	}
@@ -97,7 +98,7 @@ func (sch *SrcChainHandler) DispatchEvent(vLog types.Log) {
 	sch.disp.PayForDest(order)
 }
 
-func (sch *SrcChainHandler) parseCrossToEvent(vLog types.Log) (*model.Order, bool) {
+func (sch *SrcChainHandler) parseCrossToEvent(vLog *types.Log) (*model.Order, bool) {
 	contractAbi, err := abi.JSON(strings.NewReader(string(contracts.CrossABI)))
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("Not found abi json, err:%+v", err))
