@@ -83,7 +83,8 @@ func (cm *ChainManager) start() {
 		}
 
 		conn := cm.initEthClient(cc.ChainID, cc.WssRpcUrl, cc.HttpRpcUrl)
-		cch := NewSrcChainHandler(conn.WssClient, conn.HttpClient, cc.ContractAddr, cc.Key, cm.db, cm)
+		keys := cm.cfg.GetChainKey(cc)
+		cch := NewSrcChainHandler(conn.WssClient, conn.HttpClient, cc.ContractAddr, cc.Key, cm.db, cm, keys)
 		if _, ok := cm.handlers[cc.ChainID]; !ok {
 			ch := &ChainHandler{
 				src:  cch,

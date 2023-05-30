@@ -2,8 +2,10 @@ package conf
 
 import (
 	"crypto/ecdsa"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/MysGate/demo_backend/util"
@@ -173,6 +175,12 @@ func (c *MysGateConfig) GetCoinLimit(coin string) *CoinAmountLimit {
 	}
 
 	return cal
+}
+
+func (cfg *MysGateConfig) GetChainKey(chain *Chain) (keys []string) {
+	key := fmt.Sprintf("%s:%s", strconv.FormatUint(chain.ChainID, 10), chain.ContractAddress)
+	keys = append(keys, key)
+	return
 }
 
 func ParseYaml(configFile string) error {
