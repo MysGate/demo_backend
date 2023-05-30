@@ -53,6 +53,7 @@ func (p *Parser) parse() {
 }
 
 func (p *Parser) parseImpl() {
+	util.Logger().Info("parseImpl")
 	// 1: parse block
 	// 2: broastcastLog
 	// 3: Upsert db parsed blocknumber

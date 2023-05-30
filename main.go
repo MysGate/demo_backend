@@ -41,6 +41,7 @@ func main() {
 	pub := pubsub.InitSubscribeManager()
 	m := chain.InitChainManager(c, e)
 	bp := blockparser.InitParserManager(c, e)
+
 	defer func() {
 		bp.CloseParser()
 		pub.ShutDown()
