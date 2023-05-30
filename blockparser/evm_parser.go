@@ -41,18 +41,18 @@ func NewParser(rpc string, keys []string, e *xorm.Engine) *Parser {
 	return p
 }
 
-func (p *Parser) Parse() {
+func (p *Parser) parse() {
 	for {
 		select {
 		case <-p.work:
-			p.parse()
+			p.parseImpl()
 		case <-p.quit:
 			return
 		}
 	}
 }
 
-func (p *Parser) parse() {
+func (p *Parser) parseImpl() {
 	// 1: parse block
 	// 2: broastcastLog
 	// 3: Upsert db parsed blocknumber
@@ -63,10 +63,10 @@ func (p *Parser) broastcastLog(key string, vLog *types.Log) {
 	m.TryPublish(key, vLog)
 }
 
-func (p *Parser) CloseParse() {
+func (p *Parser) closeParse() {
 	p.quit <- true
 }
 
-func (p *Parser) DoWork() {
+func (p *Parser) doWork() {
 	p.work <- true
 }

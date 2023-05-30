@@ -48,7 +48,7 @@ func (m *Manager) triggerParse() {
 
 func (m *Manager) parse() {
 	for _, p := range m.parsers {
-		p.Parse()
+		p.doWork()
 	}
 }
 
@@ -60,13 +60,13 @@ func (m *Manager) runParsers(rpc string, keys []string) {
 	}
 
 	m.parsers = append(m.parsers, p)
-	go p.Parse()
+	go p.parse()
 }
 
 func (m *Manager) CloseParser() {
 	m.quit <- true
 
 	for _, p := range m.parsers {
-		p.CloseParse()
+		p.closeParse()
 	}
 }
