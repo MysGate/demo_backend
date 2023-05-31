@@ -1,10 +1,18 @@
 package blockparser
 
 import (
+	"context"
 	"fmt"
+	"math/big"
+	"strconv"
+	"strings"
+	"time"
 
+	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/pubsub"
 	"github.com/MysGate/demo_backend/util"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/go-xorm/xorm"
@@ -54,9 +62,42 @@ func (p *Parser) parse() {
 
 func (p *Parser) parseImpl() {
 	util.Logger().Info("parseImpl")
-	// 1: parse block
-	// 2: broastcastLog
-	// 3: Upsert db parsed blocknumber
+	header, _ := p.client.HeaderByNumber(context.Background(), nil)
+	for _, topic := range p.keys {
+		// 1: parse block
+		key := strings.Split(topic, ":")
+		chanId, _ := strconv.ParseInt(key[0], 10, 64)
+		has, block := model.GetBlock(chanId, key[1], p.e)
+		if !has {
+			block = &model.Block{
+				ChainId:     int(chanId),
+				Contract:    key[1],
+				BlockNumber: header.Number.Int64() - 10000}
+			model.InsertBlock(block, p.e)
+		}
+		query := ethereum.FilterQuery{
+			FromBlock: big.NewInt(block.BlockNumber + 1),
+			ToBlock:   header.Number,
+			Addresses: []common.Address{
+				common.HexToAddress(key[1]),
+			},
+		}
+		logs, err := p.client.FilterLogs(context.Background(), query)
+		if err != nil {
+			util.Logger().Error(fmt.Sprintf("chainId %d failed to GetEthLogs: %v", chanId, err))
+			return
+		}
+		// 2: broastcastLog
+		for _, log := range logs {
+			p.broastcastLog(topic, &log)
+		}
+
+		// 3: Upsert db parsed blocknumber
+		block.BlockNumber = header.Number.Int64()
+		block.Updated = time.Now()
+		model.UpdateBlock(block, p.e)
+	}
+
 }
 
 func (p *Parser) broastcastLog(key string, vLog *types.Log) {
