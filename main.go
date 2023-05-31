@@ -4,9 +4,11 @@ import (
 	"flag"
 	"time"
 
+	"github.com/MysGate/demo_backend/blockparser"
 	"github.com/MysGate/demo_backend/chain"
 	"github.com/MysGate/demo_backend/conf"
 	"github.com/MysGate/demo_backend/model"
+	"github.com/MysGate/demo_backend/pubsub"
 	"github.com/MysGate/demo_backend/rpc"
 	"github.com/MysGate/demo_backend/util"
 )
@@ -36,8 +38,16 @@ func main() {
 	initLogger(c)
 
 	e := model.InitMySQLXorm(c.MySql.Uri, c.MySql.ShowSQL)
+	pub := pubsub.InitSubscribeManager()
 	m := chain.InitChainManager(c, e)
-	defer m.CloseChainManager()
+	bp := blockparser.InitParserManager(c, e)
+
+	defer func() {
+		bp.CloseParser()
+		pub.ShutDown()
+		m.CloseChainManager()
+	}()
+
 	util.Logger().Info("chain manager module start succeed!")
 
 	s := rpc.NewHttpServer(c, e)
