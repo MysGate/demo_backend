@@ -20,7 +20,7 @@ func Keccak256EncodePackedContractOrder(co *contracts.CrossControllerOrder) (ord
 		util.EncodeBigInt(co.DestChainId),
 		util.EncodeAddress(co.DestAddress),
 		util.EncodeAddress(co.DestToken),
-		util.EncodeAddress(co.PorterPool),
+		util.EncodeAddress(co.Porter),
 	)
 	hash := crypto.Keccak256Hash(result)
 	copy(orderHash[:], hash.Bytes())

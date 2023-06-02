@@ -85,7 +85,7 @@ func (dest *DestChainHandler) crossFrom(order *model.Order) error {
 		DestChainId: destChainID,
 		DestAddress: common.HexToAddress(order.DestAddress),
 		DestToken:   common.HexToAddress(order.DestToken),
-		PorterPool:  common.HexToAddress(order.PoterId),
+		Porter:      common.HexToAddress(order.PoterId),
 	}
 	destAmount := util.ConvertFloat64ToTokenAmount(order.DestAmount, 18)
 	tx, err := instance.CrossFrom(opts, *o, 18, destAmount)

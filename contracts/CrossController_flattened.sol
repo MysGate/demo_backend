@@ -1,6 +1,4 @@
-
 // SPDX-License-Identifier: MIT
-
 // File: contracts/interfaces/IPorterPool.sol
 
 
@@ -18,11 +16,17 @@ interface IPorterPool {
     function initialize(address owner, address crossController, bytes memory data) external;
 
     function fixedFee() external view returns(uint256);
-    function floatFee() external view returns(uint256);
 }
 
-// File: @openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol
+// File: contracts/interfaces/IPorterFactory.sol
 
+
+pragma solidity ^0.8.12;
+
+interface IPorterFactory {
+    function getPorterPool(address porter) external view returns (address);
+}
+// File: @openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol
 
 
 // OpenZeppelin Contracts (last updated v4.8.0) (utils/Address.sol)
@@ -855,6 +859,8 @@ pragma solidity ^0.8.12;
 
 
 
+
+
 contract CrossController is PausableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -872,12 +878,13 @@ contract CrossController is PausableUpgradeable {
         uint256 crossAmount,
         uint256 paidAmount
     );
-
     event CommitReceipt(
         address indexed validator,
         bytes32 indexed orderHash,
         Receipt receipt
     );
+    event SettedFloatFee(uint256 floatFee);
+    event SettedPorterFactory(address _factory);
 
     struct Order {
         uint256 orderId; // unique required
@@ -888,7 +895,7 @@ contract CrossController is PausableUpgradeable {
         uint256 destChainId;
         address destAddress;
         address destToken;
-        address porterPool;
+        address porter;
     }
 
     struct Receipt {
@@ -897,20 +904,22 @@ contract CrossController is PausableUpgradeable {
     }
 
     uint256 public currentChainId;
+    uint256 public floatFee;
     mapping(bytes32 => Order) public orders;
     mapping(bytes32 => Receipt) public receipts;
     mapping(uint256 => bytes32) public orderHashes;
     mapping(bytes32 => bool) public pendingOrders;
     mapping(bytes32 => bool) public paidOrders;
-    address public validator;
+    address public owner;
+    address public porterFactory; 
 
     //TODO: multi validators
-    modifier onlyValidator() {
-        require(msg.sender == validator, "");
+    modifier onlyOwner() {
+        require(msg.sender == owner, "");
         _;
     }
 
-    function initialize(address _validator) external initializer {
+    function initialize(address _owner) external initializer {
         {
             uint256 chainId;
             assembly {
@@ -918,7 +927,7 @@ contract CrossController is PausableUpgradeable {
             }
             currentChainId = chainId;
         }
-        validator = _validator;
+        owner = _owner;
     }
 
     function crossTo(Order calldata order) external {
@@ -934,10 +943,13 @@ contract CrossController is PausableUpgradeable {
                 order.destChainId,
                 order.destAddress,
                 order.destToken,
-                order.porterPool
+                order.porter
             )
         );
         require(orderHashes[order.orderId] == bytes32(0), "");
+        address porterPool = IPorterFactory(porterFactory).getPorterPool(order.porter);
+        require(porterPool != address(0), "");
+
         orders[orderHash] = order;
         orderHashes[order.orderId] = orderHash;
         pendingOrders[orderHash] = true;
@@ -947,11 +959,10 @@ contract CrossController is PausableUpgradeable {
             order.srcAmount
         );
 
-        uint256 fixedFee = IPorterPool(order.porterPool).fixedFee();
+        uint256 fixedFee = IPorterPool(porterPool).fixedFee();
         uint256 fixedFeeAmount = (fixedFee *
             (10 ** IERC20UpgradeableExtended(order.srcToken).decimals())) /
             10000;
-        uint256 floatFee = IPorterPool(order.porterPool).floatFee();
         uint256 floatFeeAmount = (order.srcAmount * floatFee) / 10000;
         uint256 crossAmount = order.srcAmount - fixedFeeAmount - floatFeeAmount;
 
@@ -968,8 +979,7 @@ contract CrossController is PausableUpgradeable {
         Order calldata order,
         uint8 srcTokenDecimals,
         uint256 crossAmount
-    ) external onlyValidator {
-        require(order.srcAddress == msg.sender, "");
+    ) external onlyOwner {
         require(order.destChainId == currentChainId, "");
         bytes32 orderHash = keccak256(
             abi.encodePacked(
@@ -981,16 +991,19 @@ contract CrossController is PausableUpgradeable {
                 order.destChainId,
                 order.destAddress,
                 order.destToken,
-                order.porterPool
+                order.porter
             )
         );
         require(!paidOrders[orderHash], "");
+        address porterPool = IPorterFactory(porterFactory).getPorterPool(order.porter);
+        require(porterPool != address(0), "");
+
         paidOrders[orderHash] = true;
 
         uint256 paidAmount = (crossAmount *
             (10 ** IERC20UpgradeableExtended(order.destToken).decimals())) /
             (10 ** srcTokenDecimals);
-        IPorterPool(order.porterPool).paying(
+        IPorterPool(porterPool).paying(
             order.destAddress,
             order.destToken,
             paidAmount
@@ -1008,22 +1021,41 @@ contract CrossController is PausableUpgradeable {
     function commitReceipt(
         bytes32 orderHash,
         Receipt calldata receipt
-    ) external onlyValidator {
+    ) external onlyOwner {
         require(pendingOrders[orderHash], "");
+        Order memory order = orders[orderHash];
+        address porterPool = IPorterFactory(porterFactory).getPorterPool(order.porter);
+        require(porterPool != address(0), "");
+
         pendingOrders[orderHash] = false;
         receipts[orderHash] = receipt;
-        Order memory order = orders[orderHash];
+        
+
         //TODO: verifier.sol
         IERC20Upgradeable(order.srcToken).approve(
-            order.porterPool,
+            porterPool,
             order.srcAmount
         );
-        IPorterPool(order.porterPool).returning(
+        IPorterPool(porterPool).returning(
             address(this),
             order.srcToken,
             order.srcAmount
         );
 
         emit CommitReceipt(msg.sender, orderHash, receipt);
+    }
+    
+    function setFloatFee(uint256 _floatFee) external onlyOwner {
+        require(_floatFee <= 10000, "");
+        floatFee = _floatFee;
+
+        emit SettedFloatFee(_floatFee);
+    }
+
+    function setPorterFactory(address _factory) external onlyOwner {
+        require(_factory != address(0), "");
+        porterFactory = _factory;
+
+        emit SettedPorterFactory(_factory);
     }
 }

@@ -39,7 +39,7 @@ type CrossControllerOrder struct {
 	DestChainId *big.Int
 	DestAddress common.Address
 	DestToken   common.Address
-	PorterPool  common.Address
+	Porter      common.Address
 }
 
 // CrossControllerReceipt is an auto generated low-level Go binding around an user-defined struct.
@@ -50,7 +50,7 @@ type CrossControllerReceipt struct {
 
 // CrossMetaData contains all meta data concerning the Cross contract.
 var CrossMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"proof\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"destTxHash\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structCrossController.Receipt\",\"name\":\"receipt\",\"type\":\"tuple\"}],\"name\":\"CommitReceipt\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"destAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"porterPool\",\"type\":\"address\"}],\"indexed\":false,\"internalType\":\"structCrossController.Order\",\"name\":\"order\",\"type\":\"tuple\"},{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"srcTokenDecimals\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"crossAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"paidAmount\",\"type\":\"uint256\"}],\"name\":\"CrossFrom\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"destAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"porterPool\",\"type\":\"address\"}],\"indexed\":false,\"internalType\":\"structCrossController.Order\",\"name\":\"order\",\"type\":\"tuple\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fixedFeeAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"floatFeeAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"crossAmount\",\"type\":\"uint256\"}],\"name\":\"CrossTo\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"proof\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"destTxHash\",\"type\":\"bytes32\"}],\"internalType\":\"structCrossController.Receipt\",\"name\":\"receipt\",\"type\":\"tuple\"}],\"name\":\"commitReceipt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"destAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"porterPool\",\"type\":\"address\"}],\"internalType\":\"structCrossController.Order\",\"name\":\"order\",\"type\":\"tuple\"},{\"internalType\":\"uint8\",\"name\":\"srcTokenDecimals\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"crossAmount\",\"type\":\"uint256\"}],\"name\":\"crossFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"destAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"porterPool\",\"type\":\"address\"}],\"internalType\":\"structCrossController.Order\",\"name\":\"order\",\"type\":\"tuple\"}],\"name\":\"crossTo\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentChainId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_validator\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"orderHashes\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"orders\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"destAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"porterPool\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"paidOrders\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"pendingOrders\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"receipts\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"proof\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"destTxHash\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"validator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"proof\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"destTxHash\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structCrossController.Receipt\",\"name\":\"receipt\",\"type\":\"tuple\"}],\"name\":\"CommitReceipt\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"destAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"porter\",\"type\":\"address\"}],\"indexed\":false,\"internalType\":\"structCrossController.Order\",\"name\":\"order\",\"type\":\"tuple\"},{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"srcTokenDecimals\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"crossAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"paidAmount\",\"type\":\"uint256\"}],\"name\":\"CrossFrom\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"destAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"porter\",\"type\":\"address\"}],\"indexed\":false,\"internalType\":\"structCrossController.Order\",\"name\":\"order\",\"type\":\"tuple\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fixedFeeAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"floatFeeAmount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"crossAmount\",\"type\":\"uint256\"}],\"name\":\"CrossTo\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"floatFee\",\"type\":\"uint256\"}],\"name\":\"SettedFloatFee\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_factory\",\"type\":\"address\"}],\"name\":\"SettedPorterFactory\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"orderHash\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"proof\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"destTxHash\",\"type\":\"bytes32\"}],\"internalType\":\"structCrossController.Receipt\",\"name\":\"receipt\",\"type\":\"tuple\"}],\"name\":\"commitReceipt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"destAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"porter\",\"type\":\"address\"}],\"internalType\":\"structCrossController.Order\",\"name\":\"order\",\"type\":\"tuple\"},{\"internalType\":\"uint8\",\"name\":\"srcTokenDecimals\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"crossAmount\",\"type\":\"uint256\"}],\"name\":\"crossFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"destAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"porter\",\"type\":\"address\"}],\"internalType\":\"structCrossController.Order\",\"name\":\"order\",\"type\":\"tuple\"}],\"name\":\"crossTo\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentChainId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"floatFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"orderHashes\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"orders\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"orderId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcToken\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"destAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destToken\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"porter\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"paidOrders\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"pendingOrders\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"porterFactory\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"receipts\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"proof\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"destTxHash\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_floatFee\",\"type\":\"uint256\"}],\"name\":\"setFloatFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_factory\",\"type\":\"address\"}],\"name\":\"setPorterFactory\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // CrossABI is the input ABI used to generate the binding from.
@@ -230,6 +230,37 @@ func (_Cross *CrossCallerSession) CurrentChainId() (*big.Int, error) {
 	return _Cross.Contract.CurrentChainId(&_Cross.CallOpts)
 }
 
+// FloatFee is a free data retrieval call binding the contract method 0x7effecea.
+//
+// Solidity: function floatFee() view returns(uint256)
+func (_Cross *CrossCaller) FloatFee(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Cross.contract.Call(opts, &out, "floatFee")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// FloatFee is a free data retrieval call binding the contract method 0x7effecea.
+//
+// Solidity: function floatFee() view returns(uint256)
+func (_Cross *CrossSession) FloatFee() (*big.Int, error) {
+	return _Cross.Contract.FloatFee(&_Cross.CallOpts)
+}
+
+// FloatFee is a free data retrieval call binding the contract method 0x7effecea.
+//
+// Solidity: function floatFee() view returns(uint256)
+func (_Cross *CrossCallerSession) FloatFee() (*big.Int, error) {
+	return _Cross.Contract.FloatFee(&_Cross.CallOpts)
+}
+
 // OrderHashes is a free data retrieval call binding the contract method 0xdf69558c.
 //
 // Solidity: function orderHashes(uint256 ) view returns(bytes32)
@@ -263,7 +294,7 @@ func (_Cross *CrossCallerSession) OrderHashes(arg0 *big.Int) ([32]byte, error) {
 
 // Orders is a free data retrieval call binding the contract method 0x9c3f1e90.
 //
-// Solidity: function orders(bytes32 ) view returns(uint256 orderId, uint256 srcChainId, address srcAddress, address srcToken, uint256 srcAmount, uint256 destChainId, address destAddress, address destToken, address porterPool)
+// Solidity: function orders(bytes32 ) view returns(uint256 orderId, uint256 srcChainId, address srcAddress, address srcToken, uint256 srcAmount, uint256 destChainId, address destAddress, address destToken, address porter)
 func (_Cross *CrossCaller) Orders(opts *bind.CallOpts, arg0 [32]byte) (struct {
 	OrderId     *big.Int
 	SrcChainId  *big.Int
@@ -273,7 +304,7 @@ func (_Cross *CrossCaller) Orders(opts *bind.CallOpts, arg0 [32]byte) (struct {
 	DestChainId *big.Int
 	DestAddress common.Address
 	DestToken   common.Address
-	PorterPool  common.Address
+	Porter      common.Address
 }, error) {
 	var out []interface{}
 	err := _Cross.contract.Call(opts, &out, "orders", arg0)
@@ -287,7 +318,7 @@ func (_Cross *CrossCaller) Orders(opts *bind.CallOpts, arg0 [32]byte) (struct {
 		DestChainId *big.Int
 		DestAddress common.Address
 		DestToken   common.Address
-		PorterPool  common.Address
+		Porter      common.Address
 	})
 	if err != nil {
 		return *outstruct, err
@@ -301,7 +332,7 @@ func (_Cross *CrossCaller) Orders(opts *bind.CallOpts, arg0 [32]byte) (struct {
 	outstruct.DestChainId = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
 	outstruct.DestAddress = *abi.ConvertType(out[6], new(common.Address)).(*common.Address)
 	outstruct.DestToken = *abi.ConvertType(out[7], new(common.Address)).(*common.Address)
-	outstruct.PorterPool = *abi.ConvertType(out[8], new(common.Address)).(*common.Address)
+	outstruct.Porter = *abi.ConvertType(out[8], new(common.Address)).(*common.Address)
 
 	return *outstruct, err
 
@@ -309,7 +340,7 @@ func (_Cross *CrossCaller) Orders(opts *bind.CallOpts, arg0 [32]byte) (struct {
 
 // Orders is a free data retrieval call binding the contract method 0x9c3f1e90.
 //
-// Solidity: function orders(bytes32 ) view returns(uint256 orderId, uint256 srcChainId, address srcAddress, address srcToken, uint256 srcAmount, uint256 destChainId, address destAddress, address destToken, address porterPool)
+// Solidity: function orders(bytes32 ) view returns(uint256 orderId, uint256 srcChainId, address srcAddress, address srcToken, uint256 srcAmount, uint256 destChainId, address destAddress, address destToken, address porter)
 func (_Cross *CrossSession) Orders(arg0 [32]byte) (struct {
 	OrderId     *big.Int
 	SrcChainId  *big.Int
@@ -319,14 +350,14 @@ func (_Cross *CrossSession) Orders(arg0 [32]byte) (struct {
 	DestChainId *big.Int
 	DestAddress common.Address
 	DestToken   common.Address
-	PorterPool  common.Address
+	Porter      common.Address
 }, error) {
 	return _Cross.Contract.Orders(&_Cross.CallOpts, arg0)
 }
 
 // Orders is a free data retrieval call binding the contract method 0x9c3f1e90.
 //
-// Solidity: function orders(bytes32 ) view returns(uint256 orderId, uint256 srcChainId, address srcAddress, address srcToken, uint256 srcAmount, uint256 destChainId, address destAddress, address destToken, address porterPool)
+// Solidity: function orders(bytes32 ) view returns(uint256 orderId, uint256 srcChainId, address srcAddress, address srcToken, uint256 srcAmount, uint256 destChainId, address destAddress, address destToken, address porter)
 func (_Cross *CrossCallerSession) Orders(arg0 [32]byte) (struct {
 	OrderId     *big.Int
 	SrcChainId  *big.Int
@@ -336,9 +367,40 @@ func (_Cross *CrossCallerSession) Orders(arg0 [32]byte) (struct {
 	DestChainId *big.Int
 	DestAddress common.Address
 	DestToken   common.Address
-	PorterPool  common.Address
+	Porter      common.Address
 }, error) {
 	return _Cross.Contract.Orders(&_Cross.CallOpts, arg0)
+}
+
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() view returns(address)
+func (_Cross *CrossCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _Cross.contract.Call(opts, &out, "owner")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() view returns(address)
+func (_Cross *CrossSession) Owner() (common.Address, error) {
+	return _Cross.Contract.Owner(&_Cross.CallOpts)
+}
+
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() view returns(address)
+func (_Cross *CrossCallerSession) Owner() (common.Address, error) {
+	return _Cross.Contract.Owner(&_Cross.CallOpts)
 }
 
 // PaidOrders is a free data retrieval call binding the contract method 0x39c51fea.
@@ -434,6 +496,37 @@ func (_Cross *CrossCallerSession) PendingOrders(arg0 [32]byte) (bool, error) {
 	return _Cross.Contract.PendingOrders(&_Cross.CallOpts, arg0)
 }
 
+// PorterFactory is a free data retrieval call binding the contract method 0x2f803f81.
+//
+// Solidity: function porterFactory() view returns(address)
+func (_Cross *CrossCaller) PorterFactory(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _Cross.contract.Call(opts, &out, "porterFactory")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// PorterFactory is a free data retrieval call binding the contract method 0x2f803f81.
+//
+// Solidity: function porterFactory() view returns(address)
+func (_Cross *CrossSession) PorterFactory() (common.Address, error) {
+	return _Cross.Contract.PorterFactory(&_Cross.CallOpts)
+}
+
+// PorterFactory is a free data retrieval call binding the contract method 0x2f803f81.
+//
+// Solidity: function porterFactory() view returns(address)
+func (_Cross *CrossCallerSession) PorterFactory() (common.Address, error) {
+	return _Cross.Contract.PorterFactory(&_Cross.CallOpts)
+}
+
 // Receipts is a free data retrieval call binding the contract method 0xef6cf04d.
 //
 // Solidity: function receipts(bytes32 ) view returns(bytes32 proof, bytes32 destTxHash)
@@ -477,37 +570,6 @@ func (_Cross *CrossCallerSession) Receipts(arg0 [32]byte) (struct {
 	DestTxHash [32]byte
 }, error) {
 	return _Cross.Contract.Receipts(&_Cross.CallOpts, arg0)
-}
-
-// Validator is a free data retrieval call binding the contract method 0x3a5381b5.
-//
-// Solidity: function validator() view returns(address)
-func (_Cross *CrossCaller) Validator(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _Cross.contract.Call(opts, &out, "validator")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// Validator is a free data retrieval call binding the contract method 0x3a5381b5.
-//
-// Solidity: function validator() view returns(address)
-func (_Cross *CrossSession) Validator() (common.Address, error) {
-	return _Cross.Contract.Validator(&_Cross.CallOpts)
-}
-
-// Validator is a free data retrieval call binding the contract method 0x3a5381b5.
-//
-// Solidity: function validator() view returns(address)
-func (_Cross *CrossCallerSession) Validator() (common.Address, error) {
-	return _Cross.Contract.Validator(&_Cross.CallOpts)
 }
 
 // CommitReceipt is a paid mutator transaction binding the contract method 0x2d75219c.
@@ -575,23 +637,65 @@ func (_Cross *CrossTransactorSession) CrossTo(order CrossControllerOrder) (*type
 
 // Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
 //
-// Solidity: function initialize(address _validator) returns()
-func (_Cross *CrossTransactor) Initialize(opts *bind.TransactOpts, _validator common.Address) (*types.Transaction, error) {
-	return _Cross.contract.Transact(opts, "initialize", _validator)
+// Solidity: function initialize(address _owner) returns()
+func (_Cross *CrossTransactor) Initialize(opts *bind.TransactOpts, _owner common.Address) (*types.Transaction, error) {
+	return _Cross.contract.Transact(opts, "initialize", _owner)
 }
 
 // Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
 //
-// Solidity: function initialize(address _validator) returns()
-func (_Cross *CrossSession) Initialize(_validator common.Address) (*types.Transaction, error) {
-	return _Cross.Contract.Initialize(&_Cross.TransactOpts, _validator)
+// Solidity: function initialize(address _owner) returns()
+func (_Cross *CrossSession) Initialize(_owner common.Address) (*types.Transaction, error) {
+	return _Cross.Contract.Initialize(&_Cross.TransactOpts, _owner)
 }
 
 // Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
 //
-// Solidity: function initialize(address _validator) returns()
-func (_Cross *CrossTransactorSession) Initialize(_validator common.Address) (*types.Transaction, error) {
-	return _Cross.Contract.Initialize(&_Cross.TransactOpts, _validator)
+// Solidity: function initialize(address _owner) returns()
+func (_Cross *CrossTransactorSession) Initialize(_owner common.Address) (*types.Transaction, error) {
+	return _Cross.Contract.Initialize(&_Cross.TransactOpts, _owner)
+}
+
+// SetFloatFee is a paid mutator transaction binding the contract method 0xcb23c2a7.
+//
+// Solidity: function setFloatFee(uint256 _floatFee) returns()
+func (_Cross *CrossTransactor) SetFloatFee(opts *bind.TransactOpts, _floatFee *big.Int) (*types.Transaction, error) {
+	return _Cross.contract.Transact(opts, "setFloatFee", _floatFee)
+}
+
+// SetFloatFee is a paid mutator transaction binding the contract method 0xcb23c2a7.
+//
+// Solidity: function setFloatFee(uint256 _floatFee) returns()
+func (_Cross *CrossSession) SetFloatFee(_floatFee *big.Int) (*types.Transaction, error) {
+	return _Cross.Contract.SetFloatFee(&_Cross.TransactOpts, _floatFee)
+}
+
+// SetFloatFee is a paid mutator transaction binding the contract method 0xcb23c2a7.
+//
+// Solidity: function setFloatFee(uint256 _floatFee) returns()
+func (_Cross *CrossTransactorSession) SetFloatFee(_floatFee *big.Int) (*types.Transaction, error) {
+	return _Cross.Contract.SetFloatFee(&_Cross.TransactOpts, _floatFee)
+}
+
+// SetPorterFactory is a paid mutator transaction binding the contract method 0x5e553013.
+//
+// Solidity: function setPorterFactory(address _factory) returns()
+func (_Cross *CrossTransactor) SetPorterFactory(opts *bind.TransactOpts, _factory common.Address) (*types.Transaction, error) {
+	return _Cross.contract.Transact(opts, "setPorterFactory", _factory)
+}
+
+// SetPorterFactory is a paid mutator transaction binding the contract method 0x5e553013.
+//
+// Solidity: function setPorterFactory(address _factory) returns()
+func (_Cross *CrossSession) SetPorterFactory(_factory common.Address) (*types.Transaction, error) {
+	return _Cross.Contract.SetPorterFactory(&_Cross.TransactOpts, _factory)
+}
+
+// SetPorterFactory is a paid mutator transaction binding the contract method 0x5e553013.
+//
+// Solidity: function setPorterFactory(address _factory) returns()
+func (_Cross *CrossTransactorSession) SetPorterFactory(_factory common.Address) (*types.Transaction, error) {
+	return _Cross.Contract.SetPorterFactory(&_Cross.TransactOpts, _factory)
 }
 
 // CrossCommitReceiptIterator is returned from FilterCommitReceipt and is used to iterate over the raw logs and unpacked data for CommitReceipt events raised by the Cross contract.
@@ -1306,6 +1410,274 @@ func (_Cross *CrossFilterer) WatchPaused(opts *bind.WatchOpts, sink chan<- *Cros
 func (_Cross *CrossFilterer) ParsePaused(log types.Log) (*CrossPaused, error) {
 	event := new(CrossPaused)
 	if err := _Cross.contract.UnpackLog(event, "Paused", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// CrossSettedFloatFeeIterator is returned from FilterSettedFloatFee and is used to iterate over the raw logs and unpacked data for SettedFloatFee events raised by the Cross contract.
+type CrossSettedFloatFeeIterator struct {
+	Event *CrossSettedFloatFee // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *CrossSettedFloatFeeIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(CrossSettedFloatFee)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(CrossSettedFloatFee)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *CrossSettedFloatFeeIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *CrossSettedFloatFeeIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// CrossSettedFloatFee represents a SettedFloatFee event raised by the Cross contract.
+type CrossSettedFloatFee struct {
+	FloatFee *big.Int
+	Raw      types.Log // Blockchain specific contextual infos
+}
+
+// FilterSettedFloatFee is a free log retrieval operation binding the contract event 0x43d82450da77837bc3bed7812c648e023bf57da520dfce930ae9b975a6e6955d.
+//
+// Solidity: event SettedFloatFee(uint256 floatFee)
+func (_Cross *CrossFilterer) FilterSettedFloatFee(opts *bind.FilterOpts) (*CrossSettedFloatFeeIterator, error) {
+
+	logs, sub, err := _Cross.contract.FilterLogs(opts, "SettedFloatFee")
+	if err != nil {
+		return nil, err
+	}
+	return &CrossSettedFloatFeeIterator{contract: _Cross.contract, event: "SettedFloatFee", logs: logs, sub: sub}, nil
+}
+
+// WatchSettedFloatFee is a free log subscription operation binding the contract event 0x43d82450da77837bc3bed7812c648e023bf57da520dfce930ae9b975a6e6955d.
+//
+// Solidity: event SettedFloatFee(uint256 floatFee)
+func (_Cross *CrossFilterer) WatchSettedFloatFee(opts *bind.WatchOpts, sink chan<- *CrossSettedFloatFee) (event.Subscription, error) {
+
+	logs, sub, err := _Cross.contract.WatchLogs(opts, "SettedFloatFee")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(CrossSettedFloatFee)
+				if err := _Cross.contract.UnpackLog(event, "SettedFloatFee", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseSettedFloatFee is a log parse operation binding the contract event 0x43d82450da77837bc3bed7812c648e023bf57da520dfce930ae9b975a6e6955d.
+//
+// Solidity: event SettedFloatFee(uint256 floatFee)
+func (_Cross *CrossFilterer) ParseSettedFloatFee(log types.Log) (*CrossSettedFloatFee, error) {
+	event := new(CrossSettedFloatFee)
+	if err := _Cross.contract.UnpackLog(event, "SettedFloatFee", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// CrossSettedPorterFactoryIterator is returned from FilterSettedPorterFactory and is used to iterate over the raw logs and unpacked data for SettedPorterFactory events raised by the Cross contract.
+type CrossSettedPorterFactoryIterator struct {
+	Event *CrossSettedPorterFactory // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *CrossSettedPorterFactoryIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(CrossSettedPorterFactory)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(CrossSettedPorterFactory)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *CrossSettedPorterFactoryIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *CrossSettedPorterFactoryIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// CrossSettedPorterFactory represents a SettedPorterFactory event raised by the Cross contract.
+type CrossSettedPorterFactory struct {
+	Factory common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterSettedPorterFactory is a free log retrieval operation binding the contract event 0x1e213eda8bdfbd30f63a9301525e1aebd4f3845d7c251a0c524a014b6f2c41bb.
+//
+// Solidity: event SettedPorterFactory(address _factory)
+func (_Cross *CrossFilterer) FilterSettedPorterFactory(opts *bind.FilterOpts) (*CrossSettedPorterFactoryIterator, error) {
+
+	logs, sub, err := _Cross.contract.FilterLogs(opts, "SettedPorterFactory")
+	if err != nil {
+		return nil, err
+	}
+	return &CrossSettedPorterFactoryIterator{contract: _Cross.contract, event: "SettedPorterFactory", logs: logs, sub: sub}, nil
+}
+
+// WatchSettedPorterFactory is a free log subscription operation binding the contract event 0x1e213eda8bdfbd30f63a9301525e1aebd4f3845d7c251a0c524a014b6f2c41bb.
+//
+// Solidity: event SettedPorterFactory(address _factory)
+func (_Cross *CrossFilterer) WatchSettedPorterFactory(opts *bind.WatchOpts, sink chan<- *CrossSettedPorterFactory) (event.Subscription, error) {
+
+	logs, sub, err := _Cross.contract.WatchLogs(opts, "SettedPorterFactory")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(CrossSettedPorterFactory)
+				if err := _Cross.contract.UnpackLog(event, "SettedPorterFactory", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseSettedPorterFactory is a log parse operation binding the contract event 0x1e213eda8bdfbd30f63a9301525e1aebd4f3845d7c251a0c524a014b6f2c41bb.
+//
+// Solidity: event SettedPorterFactory(address _factory)
+func (_Cross *CrossFilterer) ParseSettedPorterFactory(log types.Log) (*CrossSettedPorterFactory, error) {
+	event := new(CrossSettedPorterFactory)
+	if err := _Cross.contract.UnpackLog(event, "SettedPorterFactory", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

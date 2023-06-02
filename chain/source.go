@@ -122,7 +122,7 @@ func (sch *SrcChainHandler) parseCrossToEvent(vLog *types.Log) (*model.Order, bo
 		DestChainId: orderEvent.Order.DestChainId.Uint64(),
 		DestToken:   orderEvent.Order.DestAddress.Hex(),
 		DestAmount:  util.ConvertTokenAmountToFloat64(orderEvent.CrossAmount.String(), 18),
-		PoterId:     orderEvent.Order.PorterPool.Hex(),
+		PoterId:     orderEvent.Order.Porter.Hex(),
 		FixedFee:    util.ConvertTokenAmountToFloat64(orderEvent.FixedFeeAmount.String(), 18),
 		FloatFee:    util.ConvertTokenAmountToFloat64(orderEvent.FloatFeeAmount.String(), 18),
 		Status:      core.CrossTo,
@@ -177,7 +177,7 @@ func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
 		DestChainId: new(big.Int).SetUint64(order.DestChainId),
 		DestAddress: common.HexToAddress(order.DestAddress),
 		DestToken:   common.HexToAddress(order.DestToken),
-		PorterPool:  common.HexToAddress(order.PoterId),
+		Porter:      common.HexToAddress(order.PoterId),
 	}
 	orderHash := model.Keccak256EncodePackedContractOrder(contractOrder)
 
