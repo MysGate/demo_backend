@@ -62,14 +62,16 @@ func GetCrossToTopic() string {
 
 // event CrossFrom 0x104f0c1d6ebbba9acf834bd5f27d78481d562d83159d076b974d16bca9c66c21
 func GetCrossFromTopic() string {
-	topic := []byte("CrossFrom(address indexed validator, (uint256,uint256,address,address,uint256,uint256,address,address,address) order, uint8 srcTokenDecimals, uint256 crossAmount, uint256 paidAmount)")
-	topicHash := crypto.Keccak256Hash(topic)
-	return topicHash.Hex()
+	return orderFromTopic
+	// topic := []byte("CrossFrom(address indexed validator, (uint256,uint256,address,address,uint256,uint256,address,address,address) order, uint8 srcTokenDecimals, uint256 crossAmount, uint256 paidAmount)")
+	// topicHash := crypto.Keccak256Hash(topic)
+	// return topicHash.Hex()
 }
 
 // event CommitReceipt 0x581db44feed8ab7f2b0e591fd633c1326a4ba3ea20a5c346ab38fd1f42208e81
 func GetCommitReceiptTopic() string {
-	topic := []byte("CommitReceipt(address indexed validator, bytes32 indexed orderHash, (bytes32,bytes32) receipt)")
-	topicHash := crypto.Keccak256Hash(topic)
-	return topicHash.Hex()
+	return orderCommitReceiptTopic
+	// topic := []byte("CommitReceipt(address indexed validator, bytes32 indexed orderHash, (bytes32,bytes32) receipt)")
+	// topicHash := crypto.Keccak256Hash(topic)
+	// return topicHash.Hex()
 }

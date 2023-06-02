@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/pubsub"
@@ -72,11 +71,16 @@ func (p *Parser) parseImpl() {
 			block = &model.Block{
 				ChainId:     int(chanId),
 				Contract:    key[1],
-				BlockNumber: header.Number.Int64() - 10000}
+				BlockNumber: header.Number.Int64() - 10}
 			model.InsertBlock(block, p.e)
 		}
+		fromBlock := big.NewInt(block.BlockNumber + 1)
+		minFromBlock := new(big.Int).Sub(header.Number, big.NewInt(500))
+		if minFromBlock.Cmp(fromBlock) > 0 {
+			fromBlock = minFromBlock
+		}
 		query := ethereum.FilterQuery{
-			FromBlock: big.NewInt(block.BlockNumber + 1),
+			FromBlock: fromBlock,
 			ToBlock:   header.Number,
 			Addresses: []common.Address{
 				common.HexToAddress(key[1]),
@@ -94,8 +98,7 @@ func (p *Parser) parseImpl() {
 
 		// 3: Upsert db parsed blocknumber
 		block.BlockNumber = header.Number.Int64()
-		block.Updated = time.Now()
-		model.UpdateBlock(block, p.e)
+		model.UpdateBlock(block.ID, header.Number.Int64(), p.e)
 	}
 
 }

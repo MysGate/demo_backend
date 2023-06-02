@@ -25,11 +25,11 @@ func InsertBlock(block *Block, db *xorm.Engine) error {
 }
 
 func GetBlock(chainId int64, contract string, db *xorm.Engine) (bool, *Block) {
-	block := &Block{}
+	var block Block
 	has, _ := db.Table(GetBlockTableName()).Where(" chain_id= ? and contract= ?", chainId, contract).Get(&block)
-	return has, block
+	return has, &block
 }
-func UpdateBlock(block *Block, db *xorm.Engine) error {
-	_, err := db.Table(GetBlockTableName()).ID(block.ID).Update(&block)
+func UpdateBlock(id int, blockNumber int64, db *xorm.Engine) error {
+	_, err := db.Table(GetBlockTableName()).ID(id).Update(&Block{BlockNumber: blockNumber})
 	return err
 }

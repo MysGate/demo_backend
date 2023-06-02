@@ -3,6 +3,7 @@ package chain
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/MysGate/demo_backend/core"
 	"github.com/MysGate/demo_backend/model"
@@ -58,17 +59,17 @@ func (cm *ChainManager) handlerPayForDest(order *model.Order) error {
 		return err
 	}
 
-	err = model.UpdateOrderDestTxHash(order, cm.db)
+	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, DestTxHash: order.DestTxHash, DestTxStatus: 1}, cm.db)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("handlerPayForDest update db err:%+v", err))
 		return err
 	}
-
+	cm.GenerateZkProof(order)
 	return nil
 }
 
 func (cm *ChainManager) handlerGenerateZkproof(order *model.Order) error {
-	err := model.UpdateOrderStatus(order.ID, core.Generate, cm.db)
+	err := model.UpdateOrderStatus(&model.Order{ID: order.ID, Status: core.Generate}, cm.db)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("handlerGenerateZkproof update db err:%+v", err))
 		return err
@@ -91,6 +92,9 @@ func (cm *ChainManager) handlerGenerateZkproof(order *model.Order) error {
 		return err
 	}
 	order.Proof = p.Proof
+
+	model.UpdateOrderProof(order.ID, p.Proof, cm.db)
+
 	err = cm.VerifyZkProof(order)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("handlerGenerateZkproof err:%+v", err))
@@ -101,7 +105,7 @@ func (cm *ChainManager) handlerGenerateZkproof(order *model.Order) error {
 }
 
 func (cm *ChainManager) handlerVerifyZkproof(order *model.Order) error {
-	err := model.UpdateOrderStatus(order.ID, core.Verify, cm.db)
+	err := model.UpdateOrderStatus(&model.Order{ID: order.ID, Status: core.Verify}, cm.db)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("handlerVerifyZkproof update db err:%+v", err))
 		return err
@@ -121,6 +125,12 @@ func (cm *ChainManager) handlerVerifyZkproof(order *model.Order) error {
 		return err
 	}
 
+	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, ReceiptTxHash: order.ReceiptTxHash, Status: core.CommitReceipt}, cm.db)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("handlerVerifyZkproof update db err:%+v", err))
+		return err
+	}
+
 	err = model.UpdateOrderProof(order.ID, order.Proof, cm.db)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("handlerVerifyZkproof update db err:%+v", err))
@@ -136,5 +146,5 @@ func (cm *ChainManager) handlerVerifyZkproof(order *model.Order) error {
 }
 
 func (cm *ChainManager) handlerOrderSucceed(order *model.Order) error {
-	return model.UpdateOrderStatus(order.ID, core.Success, cm.db)
+	return model.UpdateOrderStatus(&model.Order{ID: order.ID, Status: core.Success, FinishedTime: time.Now()}, cm.db)
 }

@@ -1,9 +1,10 @@
 package core
 
 const (
-	CrossFrom int = 0
-	CrossTo
-	Generate
-	Verify
-	Success
+	CrossTo       = 0
+	CrossFrom     = 1
+	Generate      = 2
+	Verify        = 3
+	CommitReceipt = 4
+	Success       = 5
 )

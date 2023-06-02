@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/MysGate/demo_backend/contracts"
-	"github.com/MysGate/demo_backend/core"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/go-xorm/xorm"
@@ -75,27 +74,12 @@ func GetOrderList(src_chain_id uint64, dest_chain_id uint64, db *xorm.Engine) ([
 	return orders, err
 }
 
-func UpdateOrderStatus(id string, status int, db *xorm.Engine) error {
-	order := &Order{
-		Status:  status,
-		Updated: time.Now(),
-	}
-
-	if status == core.Success {
-		order.FinishedTime = time.Now()
-	}
-
-	_, err := db.Table(GetOrderTableName()).ID(id).Update(order)
+func UpdateOrderStatus(order *Order, db *xorm.Engine) error {
+	_, err := db.Table(GetOrderTableName()).ID(order.ID).Update(order)
 	return err
 }
-
-func UpdateOrderDestTxHash(order *Order, db *xorm.Engine) error {
-	o := &Order{
-		DestTxHash: order.DestTxHash,
-		Updated:    time.Now(),
-	}
-
-	_, err := db.Table(GetOrderTableName()).ID(order.ID).Update(o)
+func UpdateOrderReceiptStatus(receiptTxHash string, order *Order, db *xorm.Engine) error {
+	_, err := db.Table(GetOrderTableName()).Where(" receipt_tx_hash = ?", receiptTxHash).Update(order)
 	return err
 }
 

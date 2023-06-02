@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/MysGate/demo_backend/contracts"
+	"github.com/MysGate/demo_backend/core"
 	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -66,8 +67,8 @@ func (dest *DestChainHandler) crossFrom(order *model.Order) error {
 	}
 
 	opts.Nonce = big.NewInt(int64(nonce))
-	opts.Value = big.NewInt(0)     // in wei
-	opts.GasLimit = uint64(300000) // in units
+	opts.Value = big.NewInt(0) // in wei
+	opts.GasLimit = uint64(0)  // in units
 	opts.GasPrice = gasPrice
 
 	instance, err := contracts.NewCrossTransactor(dest.ContractAddress, dest.HttpClient)
@@ -96,5 +97,6 @@ func (dest *DestChainHandler) crossFrom(order *model.Order) error {
 	}
 
 	order.DestTxHash = tx.Hash().Hex()
+	order.Status = core.CrossFrom
 	return nil
 }

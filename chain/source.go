@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	"github.com/MysGate/demo_backend/contracts"
 	"github.com/MysGate/demo_backend/core"
@@ -61,8 +62,6 @@ func (sch *SrcChainHandler) close() {
 	sch.QuitListen <- true
 }
 
-var orderCrossToTopic string = util.GetCrossToTopic()
-
 func (sch *SrcChainHandler) runListenEvent() {
 	logs := make(chan interface{}, 10000000)
 	m := pubsub.GetSubscribeManager()
@@ -86,16 +85,18 @@ func (sch *SrcChainHandler) DispatchEvent(v interface{}) {
 		return
 	}
 
-	if vLog.Topics[0].Hex() != orderCrossToTopic {
-		return
+	if vLog.Topics[0].Hex() == util.GetCrossToTopic() {
+		order, succeed := sch.parseCrossToEvent(vLog)
+		if !succeed || order == nil {
+			util.Logger().Error(fmt.Sprintf("DispatchEvent parseEvent failed: %+v", vLog))
+			return
+		}
+		sch.disp.PayForDest(order)
+	} else if vLog.Topics[0].Hex() == util.GetCrossFromTopic() {
+		sch.parseCrossFromEvent(vLog)
+	} else if vLog.Topics[0].Hex() == util.GetCommitReceiptTopic() {
+		sch.parseCrossReceiptEvent(vLog)
 	}
-	order, succeed := sch.parseCrossToEvent(vLog)
-	if !succeed || order == nil {
-		util.Logger().Error(fmt.Sprintf("DispatchEvent parseEvent failed: %+v", vLog))
-		return
-	}
-
-	sch.disp.PayForDest(order)
 }
 
 func (sch *SrcChainHandler) parseCrossToEvent(vLog *types.Log) (*model.Order, bool) {
@@ -120,7 +121,7 @@ func (sch *SrcChainHandler) parseCrossToEvent(vLog *types.Log) (*model.Order, bo
 		SrcChainId:  orderEvent.Order.SrcChainId.Uint64(),
 		DestAddress: orderEvent.Order.DestAddress.Hex(),
 		DestChainId: orderEvent.Order.DestChainId.Uint64(),
-		DestToken:   orderEvent.Order.DestAddress.Hex(),
+		DestToken:   orderEvent.Order.DestToken.Hex(),
 		DestAmount:  util.ConvertTokenAmountToFloat64(orderEvent.CrossAmount.String(), 18),
 		PoterId:     orderEvent.Order.Porter.Hex(),
 		FixedFee:    util.ConvertTokenAmountToFloat64(orderEvent.FixedFeeAmount.String(), 18),
@@ -130,8 +131,53 @@ func (sch *SrcChainHandler) parseCrossToEvent(vLog *types.Log) (*model.Order, bo
 
 	srcChainId, _ := sch.HttpClient.NetworkID(context.Background())
 	order.SrcChainId = srcChainId.Uint64()
+	order.SrcTxHash = vLog.TxHash.Hex()
 	model.InsertOrder(order, sch.Db)
 	return order, true
+}
+
+func (sch *SrcChainHandler) parseCrossFromEvent(vLog *types.Log) bool {
+	contractAbi, err := abi.JSON(strings.NewReader(string(contracts.CrossABI)))
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("Not found abi json, err:%+v", err))
+		return false
+	}
+
+	orderFromEvent := &contracts.CrossCrossFrom{}
+	err = contractAbi.UnpackIntoInterface(orderFromEvent, "CrossFrom", vLog.Data)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("[Order] failed to UnpackIntoInterface: %+v", err))
+		return false
+	}
+
+	order := &model.Order{
+		ID:           orderFromEvent.Order.OrderId.String(),
+		DestTxStatus: 1,
+	}
+	model.UpdateOrderStatus(order, sch.Db)
+	return true
+}
+
+func (sch *SrcChainHandler) parseCrossReceiptEvent(vLog *types.Log) bool {
+	contractAbi, err := abi.JSON(strings.NewReader(string(contracts.CrossABI)))
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("Not found abi json, err:%+v", err))
+		return false
+	}
+
+	orderReceiptEvent := &contracts.CrossCommitReceipt{}
+	err = contractAbi.UnpackIntoInterface(orderReceiptEvent, "CommitReceipt", vLog.Data)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("[Order] failed to UnpackIntoInterface: %+v", err))
+		return false
+	}
+
+	order := &model.Order{
+		ReceiptTxStatus: 1,
+		FinishedTime:    time.Now(),
+	}
+	model.UpdateOrderReceiptStatus(vLog.TxHash.Hex(), order, sch.Db)
+	return true
 }
 
 func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
@@ -158,8 +204,8 @@ func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
 	}
 
 	opts.Nonce = big.NewInt(int64(nonce))
-	opts.Value = big.NewInt(0)     // in wei
-	opts.GasLimit = uint64(300000) // in units
+	opts.Value = big.NewInt(0) // in wei
+	opts.GasLimit = uint64(0)  // in units
 	opts.GasPrice = gasPrice
 
 	instance, err := contracts.NewCrossTransactor(sch.ContractAddress, sch.HttpClient)
@@ -194,6 +240,5 @@ func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
 	}
 
 	order.ReceiptTxHash = tx.Hash().Hex()
-
 	return nil
 }
