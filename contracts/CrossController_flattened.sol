@@ -1,5 +1,19 @@
 // SPDX-License-Identifier: MIT
-// File: contracts/interfaces/IPorterPool.sol
+// File: contracts/contracts/interfaces/IBridgeVerifier.sol
+
+
+pragma solidity ^0.8.12;
+
+interface IBridgeVerifier {
+    function addCommitment(uint256 _commitment) external;
+    function verify (
+        uint[2] memory a,
+        uint[2][2] memory b,
+        uint[2] memory c,
+        uint[2] memory input) external view returns (bool);
+    function isKnownRoot(uint256 _root) external view returns(bool);
+}
+// File: contracts/contracts/interfaces/IPorterPool.sol
 
 
 pragma solidity ^0.8.12;
@@ -18,7 +32,7 @@ interface IPorterPool {
     function fixedFee() external view returns(uint256);
 }
 
-// File: contracts/interfaces/IPorterFactory.sol
+// File: contracts/contracts/interfaces/IPorterFactory.sol
 
 
 pragma solidity ^0.8.12;
@@ -29,7 +43,7 @@ interface IPorterFactory {
 // File: @openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol
 
 
-// OpenZeppelin Contracts (last updated v4.8.0) (utils/Address.sol)
+// OpenZeppelin Contracts (last updated v4.9.0) (utils/Address.sol)
 
 pragma solidity ^0.8.1;
 
@@ -52,6 +66,10 @@ library AddressUpgradeable {
      *  - a contract in construction
      *  - an address where a contract will be created
      *  - an address where a contract lived, but was destroyed
+     *
+     * Furthermore, `isContract` will also return true if the target contract within
+     * the same transaction is already scheduled for destruction by `SELFDESTRUCT`,
+     * which only has an effect at the end of a transaction.
      * ====
      *
      * [IMPORTANT]
@@ -80,12 +98,12 @@ library AddressUpgradeable {
      * imposed by `transfer`, making them unable to receive funds via
      * `transfer`. {sendValue} removes this limitation.
      *
-     * https://diligence.consensys.net/posts/2019/09/stop-using-soliditys-transfer-now/[Learn more].
+     * https://consensys.net/diligence/blog/2019/09/stop-using-soliditys-transfer-now/[Learn more].
      *
      * IMPORTANT: because control is transferred to `recipient`, care must be
      * taken to not create reentrancy vulnerabilities. Consider using
      * {ReentrancyGuard} or the
-     * https://solidity.readthedocs.io/en/v0.5.11/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
+     * https://solidity.readthedocs.io/en/v0.8.0/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
      */
     function sendValue(address payable recipient, uint256 amount) internal {
         require(address(this).balance >= amount, "Address: insufficient balance");
@@ -141,11 +159,7 @@ library AddressUpgradeable {
      *
      * _Available since v3.1._
      */
-    function functionCallWithValue(
-        address target,
-        bytes memory data,
-        uint256 value
-    ) internal returns (bytes memory) {
+    function functionCallWithValue(address target, bytes memory data, uint256 value) internal returns (bytes memory) {
         return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
     }
 
@@ -188,6 +202,31 @@ library AddressUpgradeable {
         string memory errorMessage
     ) internal view returns (bytes memory) {
         (bool success, bytes memory returndata) = target.staticcall(data);
+        return verifyCallResultFromTarget(target, success, returndata, errorMessage);
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-}[`functionCall`],
+     * but performing a delegate call.
+     *
+     * _Available since v3.4._
+     */
+    function functionDelegateCall(address target, bytes memory data) internal returns (bytes memory) {
+        return functionDelegateCall(target, data, "Address: low-level delegate call failed");
+    }
+
+    /**
+     * @dev Same as {xref-Address-functionCall-address-bytes-string-}[`functionCall`],
+     * but performing a delegate call.
+     *
+     * _Available since v3.4._
+     */
+    function functionDelegateCall(
+        address target,
+        bytes memory data,
+        string memory errorMessage
+    ) internal returns (bytes memory) {
+        (bool success, bytes memory returndata) = target.delegatecall(data);
         return verifyCallResultFromTarget(target, success, returndata, errorMessage);
     }
 
@@ -251,7 +290,7 @@ library AddressUpgradeable {
 // File: @openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol
 
 
-// OpenZeppelin Contracts (last updated v4.8.1) (proxy/utils/Initializable.sol)
+// OpenZeppelin Contracts (last updated v4.9.0) (proxy/utils/Initializable.sol)
 
 pragma solidity ^0.8.2;
 
@@ -269,12 +308,13 @@ pragma solidity ^0.8.2;
  * For example:
  *
  * [.hljs-theme-light.nopadding]
- * ```
+ * ```solidity
  * contract MyToken is ERC20Upgradeable {
  *     function initialize() initializer public {
  *         __ERC20_init("MyToken", "MTK");
  *     }
  * }
+ *
  * contract MyTokenV2 is MyToken, ERC20PermitUpgradeable {
  *     function initializeV2() reinitializer(2) public {
  *         __ERC20Permit_init("MyToken");
@@ -394,7 +434,7 @@ abstract contract Initializable {
      */
     function _disableInitializers() internal virtual {
         require(!_initializing, "Initializable: contract is initializing");
-        if (_initialized < type(uint8).max) {
+        if (_initialized != type(uint8).max) {
             _initialized = type(uint8).max;
             emit Initialized(type(uint8).max);
         }
@@ -574,10 +614,10 @@ abstract contract PausableUpgradeable is Initializable, ContextUpgradeable {
     uint256[49] private __gap;
 }
 
-// File: @openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol
+// File: @openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20PermitUpgradeable.sol
 
 
-// OpenZeppelin Contracts v4.4.1 (token/ERC20/extensions/draft-IERC20Permit.sol)
+// OpenZeppelin Contracts (last updated v4.9.0) (token/ERC20/extensions/IERC20Permit.sol)
 
 pragma solidity ^0.8.0;
 
@@ -640,7 +680,7 @@ interface IERC20PermitUpgradeable {
 // File: @openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol
 
 
-// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)
+// OpenZeppelin Contracts (last updated v4.9.0) (token/ERC20/IERC20.sol)
 
 pragma solidity ^0.8.0;
 
@@ -715,14 +755,10 @@ interface IERC20Upgradeable {
      *
      * Emits a {Transfer} event.
      */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
 }
 
-// File: contracts/interfaces/IERC20UpgradeableExtended.sol
+// File: contracts/contracts/interfaces/IERC20UpgradeableExtended.sol
 
 
 pragma solidity ^0.8.12;
@@ -735,7 +771,7 @@ interface IERC20UpgradeableExtended is IERC20Upgradeable {
 // File: @openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol
 
 
-// OpenZeppelin Contracts (last updated v4.8.0) (token/ERC20/utils/SafeERC20.sol)
+// OpenZeppelin Contracts (last updated v4.9.0) (token/ERC20/utils/SafeERC20.sol)
 
 pragma solidity ^0.8.0;
 
@@ -754,20 +790,19 @@ pragma solidity ^0.8.0;
 library SafeERC20Upgradeable {
     using AddressUpgradeable for address;
 
-    function safeTransfer(
-        IERC20Upgradeable token,
-        address to,
-        uint256 value
-    ) internal {
+    /**
+     * @dev Transfer `value` amount of `token` from the calling contract to `to`. If `token` returns no value,
+     * non-reverting calls are assumed to be successful.
+     */
+    function safeTransfer(IERC20Upgradeable token, address to, uint256 value) internal {
         _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
     }
 
-    function safeTransferFrom(
-        IERC20Upgradeable token,
-        address from,
-        address to,
-        uint256 value
-    ) internal {
+    /**
+     * @dev Transfer `value` amount of `token` from `from` to `to`, spending the approval given by `from` to the
+     * calling contract. If `token` returns no value, non-reverting calls are assumed to be successful.
+     */
+    function safeTransferFrom(IERC20Upgradeable token, address from, address to, uint256 value) internal {
         _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
     }
 
@@ -778,11 +813,7 @@ library SafeERC20Upgradeable {
      * Whenever possible, use {safeIncreaseAllowance} and
      * {safeDecreaseAllowance} instead.
      */
-    function safeApprove(
-        IERC20Upgradeable token,
-        address spender,
-        uint256 value
-    ) internal {
+    function safeApprove(IERC20Upgradeable token, address spender, uint256 value) internal {
         // safeApprove should only be called when setting an initial allowance,
         // or when resetting it to zero. To increase and decrease it, use
         // 'safeIncreaseAllowance' and 'safeDecreaseAllowance'
@@ -793,28 +824,45 @@ library SafeERC20Upgradeable {
         _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, value));
     }
 
-    function safeIncreaseAllowance(
-        IERC20Upgradeable token,
-        address spender,
-        uint256 value
-    ) internal {
-        uint256 newAllowance = token.allowance(address(this), spender) + value;
-        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+    /**
+     * @dev Increase the calling contract's allowance toward `spender` by `value`. If `token` returns no value,
+     * non-reverting calls are assumed to be successful.
+     */
+    function safeIncreaseAllowance(IERC20Upgradeable token, address spender, uint256 value) internal {
+        uint256 oldAllowance = token.allowance(address(this), spender);
+        _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, oldAllowance + value));
     }
 
-    function safeDecreaseAllowance(
-        IERC20Upgradeable token,
-        address spender,
-        uint256 value
-    ) internal {
+    /**
+     * @dev Decrease the calling contract's allowance toward `spender` by `value`. If `token` returns no value,
+     * non-reverting calls are assumed to be successful.
+     */
+    function safeDecreaseAllowance(IERC20Upgradeable token, address spender, uint256 value) internal {
         unchecked {
             uint256 oldAllowance = token.allowance(address(this), spender);
             require(oldAllowance >= value, "SafeERC20: decreased allowance below zero");
-            uint256 newAllowance = oldAllowance - value;
-            _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
+            _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, oldAllowance - value));
         }
     }
 
+    /**
+     * @dev Set the calling contract's allowance toward `spender` to `value`. If `token` returns no value,
+     * non-reverting calls are assumed to be successful. Compatible with tokens that require the approval to be set to
+     * 0 before setting it to a non-zero value.
+     */
+    function forceApprove(IERC20Upgradeable token, address spender, uint256 value) internal {
+        bytes memory approvalCall = abi.encodeWithSelector(token.approve.selector, spender, value);
+
+        if (!_callOptionalReturnBool(token, approvalCall)) {
+            _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, 0));
+            _callOptionalReturn(token, approvalCall);
+        }
+    }
+
+    /**
+     * @dev Use a ERC-2612 signature to set the `owner` approval toward `spender` on `token`.
+     * Revert on invalid signature.
+     */
     function safePermit(
         IERC20PermitUpgradeable token,
         address owner,
@@ -843,17 +891,33 @@ library SafeERC20Upgradeable {
         // the target address contains contract code and also asserts for success in the low-level call.
 
         bytes memory returndata = address(token).functionCall(data, "SafeERC20: low-level call failed");
-        if (returndata.length > 0) {
-            // Return data is optional
-            require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
-        }
+        require(returndata.length == 0 || abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
+    }
+
+    /**
+     * @dev Imitates a Solidity high-level call (i.e. a regular function call to a contract), relaxing the requirement
+     * on the return value: the return value is optional (but if data is returned, it must not be false).
+     * @param token The token targeted by the call.
+     * @param data The call data (encoded using abi.encode or one of its variants).
+     *
+     * This is a variant of {_callOptionalReturn} that silents catches all reverts and returns a bool instead.
+     */
+    function _callOptionalReturnBool(IERC20Upgradeable token, bytes memory data) private returns (bool) {
+        // We need to perform a low level call here, to bypass Solidity's return data size checking mechanism, since
+        // we're implementing it ourselves. We cannot use {Address-functionCall} here since this should return false
+        // and not revert is the subcall reverts.
+
+        (bool success, bytes memory returndata) = address(token).call(data);
+        return
+            success && (returndata.length == 0 || abi.decode(returndata, (bool))) && AddressUpgradeable.isContract(address(token));
     }
 }
 
-// File: contracts/CrossController.sol
+// File: contracts/contracts/CrossController.sol
 
 
 pragma solidity ^0.8.12;
+
 
 
 
@@ -885,6 +949,8 @@ contract CrossController is PausableUpgradeable {
     );
     event SettedFloatFee(uint256 floatFee);
     event SettedPorterFactory(address _factory);
+    event SettedZkVerifier(address _zkVerifier);
+    event EnabledZkVerifier(bool _enable);
 
     struct Order {
         uint256 orderId; // unique required
@@ -898,8 +964,14 @@ contract CrossController is PausableUpgradeable {
         address porter;
     }
 
+    struct Proof {
+        uint[2] a;
+        uint[2][2] b;
+        uint[2] c;
+    }
+
     struct Receipt {
-        bytes32 proof;
+        bytes32 proofHash;
         bytes32 destTxHash;
     }
 
@@ -911,9 +983,10 @@ contract CrossController is PausableUpgradeable {
     mapping(bytes32 => bool) public pendingOrders;
     mapping(bytes32 => bool) public paidOrders;
     address public owner;
-    address public porterFactory; 
+    address public porterFactory;
+    bool    public enable;
+    address public zkVerifier;
 
-    //TODO: multi validators
     modifier onlyOwner() {
         require(msg.sender == owner, "");
         _;
@@ -1030,8 +1103,6 @@ contract CrossController is PausableUpgradeable {
         pendingOrders[orderHash] = false;
         receipts[orderHash] = receipt;
         
-
-        //TODO: verifier.sol
         IERC20Upgradeable(order.srcToken).approve(
             porterPool,
             order.srcAmount
@@ -1043,6 +1114,55 @@ contract CrossController is PausableUpgradeable {
         );
 
         emit CommitReceipt(msg.sender, orderHash, receipt);
+    }
+
+    function commitReceiptWithZK(
+        Proof calldata proof,
+        uint[2] memory input,
+        bytes32 orderHash,
+        bytes32 destTxHash
+    ) external onlyOwner {
+        require(enable, "");
+        require(zkVerifier != address(0), "");
+        require(pendingOrders[orderHash], "");
+        Order memory order = orders[orderHash];
+        address porterPool = IPorterFactory(porterFactory).getPorterPool(order.porter);
+        require(porterPool != address(0), "");
+        
+
+        pendingOrders[orderHash] = false;
+        require(IBridgeVerifier(zkVerifier).verify(proof.a, proof.b, proof.c, input), "");
+        
+         bytes32 proofHash = keccak256(
+            abi.encodePacked(
+                proof.a,
+                proof.b,
+                proof.c
+            )
+        );
+        
+        Receipt memory receipt = Receipt({
+            proofHash: proofHash,
+            destTxHash: destTxHash
+        });
+
+        receipts[orderHash] = receipt;
+        
+        IERC20Upgradeable(order.srcToken).approve(
+            porterPool,
+            order.srcAmount
+        );
+        IPorterPool(porterPool).returning(
+            address(this),
+            order.srcToken,
+            order.srcAmount
+        );
+
+        emit CommitReceipt(msg.sender, orderHash, receipt);
+    }
+    
+    function addCommitment(uint256 _commitment) external onlyOwner {
+        IBridgeVerifier(zkVerifier).addCommitment(_commitment);
     }
     
     function setFloatFee(uint256 _floatFee) external onlyOwner {
@@ -1057,5 +1177,19 @@ contract CrossController is PausableUpgradeable {
         porterFactory = _factory;
 
         emit SettedPorterFactory(_factory);
+    }
+
+    function setZkVerifier(address _verifier) external onlyOwner {
+        require(_verifier != address(0), "");
+        zkVerifier = _verifier;
+
+        emit SettedZkVerifier(_verifier);
+    }
+
+    function enableZkVerifier(bool _enable) external onlyOwner {
+        require(enable != _enable, "");
+        enable = _enable;
+
+        emit EnabledZkVerifier(_enable);
     }
 }

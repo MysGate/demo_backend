@@ -1,5 +1,6 @@
-## 1
-npm install solcjs
+## 1 
+## npm install -g solc@xxx
+npm install solc
 
 ## 2
 solcjs --abi .\CrossController_flattened.sol
