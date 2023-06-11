@@ -114,7 +114,7 @@ func (sch *SrcChainHandler) parseCrossToEvent(vLog *types.Log) (*model.Order, bo
 	}
 
 	order := &model.Order{
-		ID:          orderEvent.Order.OrderId.String(),
+		ID:          orderEvent.Order.OrderId.Int64(),
 		SrcAddress:  orderEvent.Order.SrcAddress.Hex(),
 		SrcAmount:   util.ConvertTokenAmountToFloat64(orderEvent.Order.SrcAmount.String(), 18),
 		SrcToken:    orderEvent.Order.SrcToken.Hex(),
@@ -151,7 +151,7 @@ func (sch *SrcChainHandler) parseCrossFromEvent(vLog *types.Log) bool {
 	}
 
 	order := &model.Order{
-		ID:           orderFromEvent.Order.OrderId.String(),
+		ID:           orderFromEvent.Order.OrderId.Int64(),
 		DestTxStatus: 1,
 	}
 	model.UpdateOrderStatus(order, sch.Db)
@@ -213,9 +213,8 @@ func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
 		util.Logger().Error(fmt.Sprintf("commitReceipt: create instance err:%+v", err))
 		return err
 	}
-	orderId, _ := new(big.Int).SetString(order.ID, 10)
 	contractOrder := &contracts.CrossControllerOrder{
-		OrderId:     orderId,
+		OrderId:     big.NewInt(order.ID),
 		SrcChainId:  new(big.Int).SetUint64(order.SrcChainId),
 		SrcAddress:  common.HexToAddress(order.SrcAddress),
 		SrcToken:    common.HexToAddress(order.SrcToken),

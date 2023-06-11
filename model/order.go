@@ -27,7 +27,7 @@ func Keccak256EncodePackedContractOrder(co *contracts.CrossControllerOrder) (ord
 }
 
 type Order struct {
-	ID         string  `xorm:"'id' pk autoincr" json:"id"`
+	ID         int64   `xorm:"'id' pk" json:"id"`
 	PoterId    string  `xorm:"poter_id" json:"poter_id"`
 	SrcChainId uint64  `xorm:"src_chain_id" json:"src_chain_id"`
 	SrcAddress string  `xorm:"src_address" json:"src_address"`
@@ -62,7 +62,7 @@ func (o *Order) TableName() string {
 
 func GetOrder(orderId int64, db *xorm.Engine) (bool, *Order) {
 	order := &Order{}
-	has, _ := db.Table(GetOrderTableName()).ID(orderId).Get(&order)
+	has, _ := db.Table(GetOrderTableName()).ID(orderId).Get(order)
 	return has, order
 }
 
@@ -83,7 +83,7 @@ func UpdateOrderReceiptStatus(receiptTxHash string, order *Order, db *xorm.Engin
 	return err
 }
 
-func UpdateOrderProof(id string, proof string, db *xorm.Engine) error {
+func UpdateOrderProof(id int64, proof string, db *xorm.Engine) error {
 	order := &Order{
 		Proof:   proof,
 		Updated: time.Now(),
