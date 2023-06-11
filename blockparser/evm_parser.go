@@ -66,7 +66,7 @@ func (p *Parser) parseImpl() {
 		return
 	}
 
-	if header != nil {
+	if header == nil {
 		util.Logger().Error("parseImpl:p.client.HeaderByNumber header nil")
 		return
 	}
