@@ -30,7 +30,7 @@ func (s *Server) initRouter() {
 	s.e.GET("/order/nextid", s.getNextOrderID)
 	s.e.POST("/porter", s.getPorters)
 	s.e.POST("/cost", s.getCost)
-	s.e.POST("/order/search", s.orderSearch)
+	s.e.GET("/order/search", s.orderSearch)
 	s.e.POST("/order/list", s.orderList)
 }
 

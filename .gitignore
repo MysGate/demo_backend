@@ -24,3 +24,4 @@ go.work
 test/
 *.sql
 demo_backend
+.DS_Store
