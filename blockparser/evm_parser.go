@@ -60,8 +60,17 @@ func (p *Parser) parse() {
 }
 
 func (p *Parser) parseImpl() {
-	util.Logger().Info("parseImpl")
-	header, _ := p.client.HeaderByNumber(context.Background(), nil)
+	header, err := p.client.HeaderByNumber(context.Background(), nil)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("parseImpl:p.client.HeaderByNumber err:%+v", err))
+		return
+	}
+
+	if header != nil {
+		util.Logger().Error("parseImpl:p.client.HeaderByNumber header nil")
+		return
+	}
+
 	for _, topic := range p.keys {
 		// 1: parse block
 		key := strings.Split(topic, ":")
