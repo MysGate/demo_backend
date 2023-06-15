@@ -46,6 +46,7 @@ type Order struct {
 	DestTxStatus int     `xorm:"dest_tx_status" json:"dest_tx_status"`
 
 	Proof           string `xorm:"proof" json:"proof"`
+	RawProof        string `xorm:"raw_proof" json:"raw_proof"`
 	ReceiptTxHash   string `xorm:"receipt_tx_hash" json:"receipt_tx_hash"`
 	ReceiptTxStatus int    `xorm:"receipt_tx_status" json:"receipt_tx_status"`
 
@@ -87,6 +88,15 @@ func UpdateOrderProof(id int64, proof string, db *xorm.Engine) error {
 	order := &Order{
 		Proof:   proof,
 		Updated: time.Now(),
+	}
+	_, err := db.Table(GetOrderTableName()).ID(id).Update(order)
+	return err
+}
+
+func UpdateOrderRawProof(id int64, rawProof string, db *xorm.Engine) error {
+	order := &Order{
+		RawProof: rawProof,
+		Updated:  time.Now(),
 	}
 	_, err := db.Table(GetOrderTableName()).ID(id).Update(order)
 	return err

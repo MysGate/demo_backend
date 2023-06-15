@@ -11,8 +11,9 @@ type msgType int
 
 const (
 	pay_for_dest msgType = iota
+	add_commitment
 	generate_zkproof
-	verify_zkproof
+	commit_receipt
 	order_succeed
 	close
 )
@@ -41,7 +42,19 @@ func (cm *ChainManager) messageLoop() {
 					util.Logger().Info("pay_for_dest param err")
 					continue
 				}
-				cm.handlerPayForDest(order)
+				cm.handlePayForDest(order)
+			case add_commitment:
+				if msg.param == nil {
+					util.Logger().Info("add_commitment param nil")
+					continue
+				}
+
+				order, ok := msg.param.(*model.Order)
+				if !ok {
+					util.Logger().Info("add_commitment param err")
+					continue
+				}
+				cm.handleAddCommitment(order)
 			case generate_zkproof:
 				util.Logger().Info("message loop msg: generate_zkproof")
 				if msg.param == nil {
@@ -55,21 +68,21 @@ func (cm *ChainManager) messageLoop() {
 					continue
 				}
 
-				cm.handlerGenerateZkproof(ch)
+				cm.handleGenerateZkproof(ch)
 
-			case verify_zkproof:
-				util.Logger().Info("verify_zkproof loop msg: upload")
+			case commit_receipt:
+				util.Logger().Info("commit_receipt loop msg: upload")
 				if msg.param == nil {
-					util.Logger().Info("verify_zkproof param nil")
+					util.Logger().Info("commit_receipt param nil")
 					continue
 				}
 
 				order, ok := msg.param.(*model.Order)
 				if !ok {
-					util.Logger().Info("verify_zkproof param err")
+					util.Logger().Info("commit_receipt param err")
 					continue
 				}
-				cm.handlerVerifyZkproof(order)
+				cm.handleCommitReceipt(order)
 			case order_succeed:
 				util.Logger().Info("message loop msg: order_succeed")
 				if msg.param == nil {
@@ -82,7 +95,7 @@ func (cm *ChainManager) messageLoop() {
 					util.Logger().Info("verify_zkproof param err")
 					continue
 				}
-				cm.handlerOrderSucceed(order)
+				cm.handleOrderSucceed(order)
 			case close:
 				util.Logger().Info("message loop msg: close")
 				return
@@ -118,6 +131,18 @@ func (cm *ChainManager) PayForDest(order *model.Order) error {
 	return nil
 }
 
+func (cm *ChainManager) AddCommitment(order *model.Order) error {
+	if cm.isLoopExit() {
+		errMsg := "AddCommitment: channel is close"
+		err := errors.New(errMsg)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	cm.msgChan <- &message{op: add_commitment, param: order}
+	return nil
+}
+
 func (cm *ChainManager) GenerateZkProof(order *model.Order) error {
 	if cm.isLoopExit() {
 		errMsg := "GenerateZkProof: channel is close"
@@ -130,15 +155,15 @@ func (cm *ChainManager) GenerateZkProof(order *model.Order) error {
 	return nil
 }
 
-func (cm *ChainManager) VerifyZkProof(order *model.Order) error {
+func (cm *ChainManager) CommitReceipt(order *model.Order) error {
 	if cm.isLoopExit() {
-		errMsg := "VerifyZkProof: channel is close"
+		errMsg := "CommitReceipt: channel is close"
 		err := errors.New(errMsg)
 		util.Logger().Error(errMsg)
 		return err
 	}
 
-	cm.msgChan <- &message{op: verify_zkproof, param: order}
+	cm.msgChan <- &message{op: commit_receipt, param: order}
 	return nil
 }
 

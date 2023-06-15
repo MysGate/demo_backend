@@ -10,6 +10,7 @@ log:
   level: "debug"
   
 debug: true
+verify_with_zk: true
 
 chains:
   - name: "zkSync Era"

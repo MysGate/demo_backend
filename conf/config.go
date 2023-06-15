@@ -87,6 +87,7 @@ type MysGateConfig struct {
 	Debug             bool               `yaml:"debug"`
 	ZkpUrl            string             `yaml:"zkp_url"`
 	MySql             *MySQL             `yaml:"mysql"`
+	VerifyWithZk      bool               `yaml:"verify_with_zk"`
 }
 
 func GetConfig() *MysGateConfig {

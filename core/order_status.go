@@ -7,4 +7,5 @@ const (
 	Verify        = 3
 	CommitReceipt = 4
 	Success       = 5
+	AddCommitment = 6
 )
