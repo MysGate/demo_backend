@@ -181,6 +181,28 @@ func (sch *SrcChainHandler) parseCrossReceiptEvent(vLog *types.Log) bool {
 	return true
 }
 
+func (sch *SrcChainHandler) VerifyProof(order *model.Order) (error, bool) {
+	instance, err := contracts.NewBridge(sch.BridgeAddress, sch.HttpClient)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("verifyProof: create instance err:%+v", err))
+		return err, false
+	}
+
+	//ToDo convert proof
+	var a [2]*big.Int
+	var b [2][2]*big.Int
+	var c [2]*big.Int
+	var input [2]*big.Int
+	result, err := instance.Verify(&bind.CallOpts{}, a, b, c, input)
+	if err != nil {
+		errMsg := fmt.Sprintf("verifyProof:instance.verify err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err, false
+	}
+
+	return nil, result
+}
+
 func (sch *SrcChainHandler) AddCommitment(order *model.Order) error {
 	nonce, err := sch.HttpClient.PendingNonceAt(context.Background(), sch.Caller)
 	if err != nil {

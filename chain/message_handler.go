@@ -112,7 +112,7 @@ func (cm *ChainManager) handleGenerateZkproof(order *model.Order) error {
 		}
 
 		// TODO call zkp(need modify: pass the params)
-		p := pm.GetZKProof()
+		p := pm.GetZKProof(order.ID)
 		if p == nil {
 			errMsg := "get zkp err"
 			err = errors.New(errMsg)
@@ -120,9 +120,7 @@ func (cm *ChainManager) handleGenerateZkproof(order *model.Order) error {
 			return err
 		}
 		// TODO  Modify it
-		// order.RawProof =
-		// order.Proof = p.Proof
-		// model.UpdateOrderRawProof(order.ID, p.rawProof, cm.db)
+		model.UpdateOrderStatus(&model.Order{ID: order.ID, Proof: p.Proof, RawProof: p.RawProof}, cm.db)
 	}
 
 	err = cm.CommitReceipt(order)
@@ -130,20 +128,45 @@ func (cm *ChainManager) handleGenerateZkproof(order *model.Order) error {
 		util.Logger().Error(fmt.Sprintf("handleGenerateZkproof err:%+v", err))
 		return err
 	}
-
+	cm.VerifyZkProof(order)
 	return nil
 }
 
-func (cm *ChainManager) handleCommitReceipt(order *model.Order) error {
-	err := model.UpdateOrderStatus(&model.Order{ID: order.ID, Status: core.Verify}, cm.db)
-	if err != nil {
-		util.Logger().Error(fmt.Sprintf("handleVerifyZkproof update db err:%+v", err))
-		return err
-	}
-
+func (cm *ChainManager) handleVerifyZkproof(order *model.Order) (error, bool) {
+	var err error
 	srcHandler := cm.findSrcHandler(order.SrcChainId)
 	if srcHandler == nil {
 		errMsg := "handleVerifyZkproof findSrcHandler nil"
+		err = errors.New(errMsg)
+		util.Logger().Error(errMsg)
+		return err, false
+	}
+	err, result := srcHandler.VerifyProof(order)
+
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("handleVerifyZkproof VerifyProof err:%+v", err))
+		return err, false
+	}
+
+	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, ReceiptTxHash: order.ReceiptTxHash, Status: core.Verify}, cm.db)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("handleVerifyZkproof update db err:%+v", err))
+		return err, false
+	}
+
+	err = cm.OrderSucceed(order)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("handleVerifyZkproof err:%+v", err))
+		return err, false
+	}
+	return nil, result
+}
+
+func (cm *ChainManager) handleCommitReceipt(order *model.Order) error {
+	var err error
+	srcHandler := cm.findSrcHandler(order.SrcChainId)
+	if srcHandler == nil {
+		errMsg := "handleCommitReceipt findSrcHandler nil"
 		err = errors.New(errMsg)
 		util.Logger().Error(errMsg)
 		return err
@@ -156,27 +179,27 @@ func (cm *ChainManager) handleCommitReceipt(order *model.Order) error {
 	}
 
 	if err != nil {
-		util.Logger().Error(fmt.Sprintf("handleVerifyZkproof commitReceipt err:%+v", err))
+		util.Logger().Error(fmt.Sprintf("handleCommitReceipt commitReceipt err:%+v", err))
 		return err
 	}
 
 	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, ReceiptTxHash: order.ReceiptTxHash, Status: core.CommitReceipt}, cm.db)
 	if err != nil {
-		util.Logger().Error(fmt.Sprintf("handleVerifyZkproof update db err:%+v", err))
+		util.Logger().Error(fmt.Sprintf("handleCommitReceipt update db err:%+v", err))
 		return err
 	}
 
 	if cm.cfg.VerifyWithZk {
 		err = model.UpdateOrderProof(order.ID, order.Proof, cm.db)
 		if err != nil {
-			util.Logger().Error(fmt.Sprintf("handleVerifyZkproof update db err:%+v", err))
+			util.Logger().Error(fmt.Sprintf("handleCommitReceipt update db err:%+v", err))
 			return err
 		}
 	}
 
 	err = cm.OrderSucceed(order)
 	if err != nil {
-		util.Logger().Error(fmt.Sprintf("handleVerifyZkproof err:%+v", err))
+		util.Logger().Error(fmt.Sprintf("handleCommitReceipt err:%+v", err))
 		return err
 	}
 	return nil

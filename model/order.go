@@ -93,15 +93,6 @@ func UpdateOrderProof(id int64, proof string, db *xorm.Engine) error {
 	return err
 }
 
-func UpdateOrderRawProof(id int64, rawProof string, db *xorm.Engine) error {
-	order := &Order{
-		RawProof: rawProof,
-		Updated:  time.Now(),
-	}
-	_, err := db.Table(GetOrderTableName()).ID(id).Update(order)
-	return err
-}
-
 func InsertOrder(order *Order, db *xorm.Engine) error {
 	_, err := db.Table(GetOrderTableName()).Insert(order)
 	return err
