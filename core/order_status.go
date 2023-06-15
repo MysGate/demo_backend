@@ -3,9 +3,9 @@ package core
 const (
 	CrossTo       = 0
 	CrossFrom     = 1
-	Generate      = 2
-	Verify        = 3
-	CommitReceipt = 4
-	Success       = 5
-	AddCommitment = 6
+	AddCommitment = 2
+	Generate      = 3
+	Verify        = 4
+	CommitReceipt = 5
+	Success       = 6
 )

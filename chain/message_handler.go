@@ -64,7 +64,7 @@ func (cm *ChainManager) handlePayForDest(order *model.Order) error {
 		util.Logger().Error(fmt.Sprintf("handlePayForDest update db err:%+v", err))
 		return err
 	}
-	cm.GenerateZkProof(order)
+	cm.AddCommitment(order)
 	return nil
 }
 
@@ -74,7 +74,24 @@ func (cm *ChainManager) handleAddCommitment(order *model.Order) error {
 		util.Logger().Error(fmt.Sprintf("handleAddCommitment update db err:%+v", err))
 		return err
 	}
+
+	srcHandler := cm.findSrcHandler(order.SrcChainId)
+	if srcHandler == nil {
+		errMsg := "handleAddCommitment findSrcHandler nil"
+		err = errors.New(errMsg)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
 	// TODO Call contract to addCommitment
+	err = srcHandler.AddCommitment(order)
+	if err != nil {
+		errMsg := fmt.Sprintf("handleAddCommitment addCommitment fail, err:%+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	cm.GenerateZkProof(order)
 	return nil
 }
 
