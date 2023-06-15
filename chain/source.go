@@ -301,5 +301,5 @@ func (sch *SrcChainHandler) commitReceiptWithZk(order *model.Order) error {
 	// }
 
 	// order.ReceiptTxHash = tx.Hash().Hex()
-	// return nil
+	return nil
 }
