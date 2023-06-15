@@ -241,3 +241,65 @@ func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
 	order.ReceiptTxHash = tx.Hash().Hex()
 	return nil
 }
+
+func (sch *SrcChainHandler) commitReceiptWithZk(order *model.Order) error {
+	nonce, err := sch.HttpClient.PendingNonceAt(context.Background(), sch.Caller)
+	if err != nil {
+		errMsg := fmt.Sprintf("commitReceiptWithZk:sch.HttpClient.PendingNonceAt err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	gasPrice, err := sch.HttpClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		errMsg := fmt.Sprintf("commitReceiptWithZk:sch.HttpClient.SuggestGasPrice err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	srcChainID := big.NewInt(int64(order.SrcChainId))
+	opts, err := bind.NewKeyedTransactorWithChainID(sch.PrivKey, srcChainID)
+	if err != nil {
+		errMsg := fmt.Sprintf("commitReceiptWithZk:NewKeyedTransactorWithChainID err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	opts.Nonce = big.NewInt(int64(nonce))
+	opts.Value = big.NewInt(0) // in wei
+	opts.GasLimit = uint64(0)  // in units
+	opts.GasPrice = gasPrice
+
+	// instance, err := contracts.NewCrossTransactor(sch.ContractAddress, sch.HttpClient)
+	// if err != nil {
+	// 	util.Logger().Error(fmt.Sprintf("commitReceiptWithZk: create instance err:%+v", err))
+	// 	return err
+	// }
+	// contractOrder := &contracts.CrossControllerOrder{
+	// 	OrderId:     big.NewInt(order.ID),
+	// 	SrcChainId:  new(big.Int).SetUint64(order.SrcChainId),
+	// 	SrcAddress:  common.HexToAddress(order.SrcAddress),
+	// 	SrcToken:    common.HexToAddress(order.SrcToken),
+	// 	SrcAmount:   util.ConvertFloat64ToTokenAmount(order.SrcAmount, 18),
+	// 	DestChainId: new(big.Int).SetUint64(order.DestChainId),
+	// 	DestAddress: common.HexToAddress(order.DestAddress),
+	// 	DestToken:   common.HexToAddress(order.DestToken),
+	// 	Porter:      common.HexToAddress(order.PoterId),
+	// }
+	// orderHash := model.Keccak256EncodePackedContractOrder(contractOrder)
+
+	// hash := common.HexToHash(order.DestTxHash)
+	// receipt := &contracts.CrossControllerReceipt{}
+	// copy(receipt.DestTxHash[:], hash.Bytes())
+	// // TODO add proof
+	// // receipt.Proof
+	// tx, err := instance.commitReceiptWithZk(opts, orderHash, *receipt)
+	// if err != nil {
+	// 	errMsg := fmt.Sprintf("commitReceipt:instance.CommitReceipt err: %+v", err)
+	// 	util.Logger().Error(errMsg)
+	// 	return err
+	// }
+
+	// order.ReceiptTxHash = tx.Hash().Hex()
+	// return nil
+}
