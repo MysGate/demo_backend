@@ -13,6 +13,7 @@ const (
 	pay_for_dest msgType = iota
 	add_commitment
 	generate_zkproof
+	verify_zkproof
 	commit_receipt
 	order_succeed
 	close
@@ -69,6 +70,20 @@ func (cm *ChainManager) messageLoop() {
 				}
 
 				cm.handleGenerateZkproof(ch)
+			case verify_zkproof:
+				util.Logger().Info("message loop msg: verify_zkproof")
+				if msg.param == nil {
+					util.Logger().Info("verify_zkproof param nil")
+					continue
+				}
+
+				ch, ok := msg.param.(*model.Order)
+				if !ok {
+					util.Logger().Info("verify_zkproof param err")
+					continue
+				}
+
+				cm.handleVerifyZkproof(ch)
 
 			case commit_receipt:
 				util.Logger().Info("commit_receipt loop msg: upload")
@@ -152,6 +167,18 @@ func (cm *ChainManager) GenerateZkProof(order *model.Order) error {
 	}
 
 	cm.msgChan <- &message{op: generate_zkproof, param: order}
+	return nil
+}
+
+func (cm *ChainManager) VerifyZkProof(order *model.Order) error {
+	if cm.isLoopExit() {
+		errMsg := "VerifyZkProof: channel is close"
+		err := errors.New(errMsg)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	cm.msgChan <- &message{op: verify_zkproof, param: order}
 	return nil
 }
 

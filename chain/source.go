@@ -29,6 +29,7 @@ type SrcChainHandler struct {
 	HttpClient      *ethclient.Client
 	QuitListen      chan bool
 	ContractAddress common.Address
+	BridgeAddress   common.Address
 	Caller          common.Address
 	disp            IDispatcher
 	keys            []string
@@ -178,6 +179,73 @@ func (sch *SrcChainHandler) parseCrossReceiptEvent(vLog *types.Log) bool {
 	}
 	model.UpdateOrderReceiptStatus(vLog.TxHash.Hex(), order, sch.Db)
 	return true
+}
+
+func (sch *SrcChainHandler) VerifyProof(order *model.Order) (error, bool) {
+	instance, err := contracts.NewBridge(sch.BridgeAddress, sch.HttpClient)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("verifyProof: create instance err:%+v", err))
+		return err, false
+	}
+
+	//ToDo convert proof
+	var a [2]*big.Int
+	var b [2][2]*big.Int
+	var c [2]*big.Int
+	var input [2]*big.Int
+	result, err := instance.Verify(&bind.CallOpts{}, a, b, c, input)
+	if err != nil {
+		errMsg := fmt.Sprintf("verifyProof:instance.verify err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err, false
+	}
+
+	return nil, result
+}
+
+func (sch *SrcChainHandler) AddCommitment(order *model.Order) error {
+	nonce, err := sch.HttpClient.PendingNonceAt(context.Background(), sch.Caller)
+	if err != nil {
+		errMsg := fmt.Sprintf("addCommitment:sch.HttpClient.PendingNonceAt err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	gasPrice, err := sch.HttpClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		errMsg := fmt.Sprintf("addCommitment:sch.HttpClient.SuggestGasPrice err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	srcChainID := big.NewInt(int64(order.SrcChainId))
+	opts, err := bind.NewKeyedTransactorWithChainID(sch.PrivKey, srcChainID)
+	if err != nil {
+		errMsg := fmt.Sprintf("addCommitment:NewKeyedTransactorWithChainID err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	opts.Nonce = big.NewInt(int64(nonce))
+	opts.Value = big.NewInt(0) // in wei
+	opts.GasLimit = uint64(0)  // in units
+	opts.GasPrice = gasPrice
+
+	instance, err := contracts.NewBridge(sch.BridgeAddress, sch.HttpClient)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("addCommitment: create instance err:%+v", err))
+		return err
+	}
+
+	tx, err := instance.AddCommitment(opts, big.NewInt(order.ID))
+	if err != nil {
+		errMsg := fmt.Sprintf("commitReceipt:instance.CommitReceipt err: %+v", err)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	order.ReceiptTxHash = tx.Hash().Hex()
+	return nil
 }
 
 func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {

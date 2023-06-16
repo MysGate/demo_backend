@@ -1,8 +1,12 @@
 package zkp
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/MysGate/demo_backend/conf"
 	"github.com/MysGate/demo_backend/model"
+	"github.com/MysGate/demo_backend/util"
 )
 
 var pm *ProofManager
@@ -20,20 +24,20 @@ func GetProofManager(cfg *conf.MysGateConfig) *ProofManager {
 	return pm
 }
 
-func (m *ProofManager) GetZKProof() *model.ZkProof {
-	// url := m.Cfg.ZkpUrl
-	// hc := util.GetHTTPClient()
-	// body, err := util.HTTPGet("POST", url, hc)
-	// if err != nil {
-	// 	util.Logger().Error(fmt.Sprintf("GetZKProof err:+v", err))
-	// 	return nil
-	// }
-	zkp := &model.ZkProof{Proof: "Success"}
-	// err = json.Unmarshal(body, zkp)
-	// if err != nil {
-	// 	util.Logger().Error(fmt.Sprintf("GetZKProof err:+v", err))
-	// 	return nil
-	// }
+func (m *ProofManager) GetZKProof(orderId int64) *model.ZkProof {
+	url := m.Cfg.ZkpUrl
+	hc := util.GetHTTPClient()
+	body, err := util.HTTPGet("POST", url, hc)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("GetZKProof HTTPGet err:%+v", err))
+		return nil
+	}
+	zkp := &model.ZkProof{}
+	err = json.Unmarshal(body, zkp)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("GetZKProof Unmarshal err:%+v", err))
+		return nil
+	}
 
 	return zkp
 }
