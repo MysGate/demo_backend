@@ -26,13 +26,13 @@ type SrcChainHandler struct {
 	HttpClient      *ethclient.Client
 	QuitListen      chan bool
 	ContractAddress common.Address
-	BridgeAddress   common.Address
 	Caller          common.Address
 	disp            IDispatcher
 	keys            []string
+	Rpc             string
 }
 
-func NewSrcChainHandler(httpClient *ethclient.Client, addr common.Address, key *ecdsa.PrivateKey, db *xorm.Engine, disp IDispatcher, keys []string) *SrcChainHandler {
+func NewSrcChainHandler(httpClient *ethclient.Client, addr common.Address, key *ecdsa.PrivateKey, db *xorm.Engine, disp IDispatcher, keys []string, rpc string) *SrcChainHandler {
 	cch := &SrcChainHandler{
 		HttpClient:      httpClient,
 		PrivKey:         key,
@@ -41,6 +41,7 @@ func NewSrcChainHandler(httpClient *ethclient.Client, addr common.Address, key *
 		Db:              db,
 		disp:            disp,
 		keys:            keys,
+		Rpc:             rpc,
 	}
 
 	publicKey := key.Public()
@@ -101,7 +102,7 @@ func (sch *SrcChainHandler) AddCommitment(order *model.Order) (bool, error) {
 		return false, err
 	}
 
-	instance, err := contracts.NewBridge(sch.BridgeAddress, sch.HttpClient)
+	instance, err := contracts.NewCrossTransactor(sch.ContractAddress, sch.HttpClient)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("AddCommitment: create instance err:%+v", err))
 		return false, err
@@ -220,6 +221,17 @@ func (sch *SrcChainHandler) commitReceiptWithZk(order *model.Order) (bool, error
 	order.ReceiptTxHash = tx.Hash().Hex()
 	_, ret, err := util.TxWaitToSync(context.Background(), sch.HttpClient, tx)
 	return ret, err
+}
+
+func (sch *SrcChainHandler) getZkVerifier() (zkVerifier common.Address, err error) {
+	instance, err := contracts.NewCross(sch.ContractAddress, sch.HttpClient)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("getZkVerifier: create instance err:%+v", err))
+		return
+	}
+
+	zkVerifier, err = instance.ZkVerifier(nil)
+	return
 }
 
 func (sch *SrcChainHandler) parseCrossToEvent(vLog *types.Log) (*model.Order, bool) {
