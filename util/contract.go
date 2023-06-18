@@ -35,6 +35,7 @@ const (
 	orderToTopic            string = "0xeb354ff2ff6b3d6392f3c14565a5e0c60fc642b456cd2538e94968fbc54467e8"
 	orderFromTopic          string = "0x104f0c1d6ebbba9acf834bd5f27d78481d562d83159d076b974d16bca9c66c21"
 	orderCommitReceiptTopic string = "0x581db44feed8ab7f2b0e591fd633c1326a4ba3ea20a5c346ab38fd1f42208e81"
+	CommitmentAddedTopic    string = ""
 )
 
 func FindOrderEventTopic(topic string) string {
@@ -46,6 +47,8 @@ func FindOrderEventTopic(topic string) string {
 		orderEvent = "CrossFrom"
 	case orderCommitReceiptTopic:
 		orderEvent = "CommitReceipt"
+	case CommitmentAddedTopic:
+		orderEvent = "CommitmentAdded"
 	default:
 		orderEvent = ""
 	}
@@ -72,6 +75,14 @@ func GetCrossFromTopic() string {
 func GetCommitReceiptTopic() string {
 	return orderCommitReceiptTopic
 	// topic := []byte("CommitReceipt(address indexed validator, bytes32 indexed orderHash, (bytes32,bytes32) receipt)")
+	// topicHash := crypto.Keccak256Hash(topic)
+	// return topicHash.Hex()
+}
+
+// event CommitmentAdded
+func GetCommitmentAdded() string {
+	return CommitmentAddedTopic
+	// topic := []byte("CommitmentAdded(uint256 indexed commitment, uint256 leafIndex, uint256 timestamp)")
 	// topicHash := crypto.Keccak256Hash(topic)
 	// return topicHash.Hex()
 }

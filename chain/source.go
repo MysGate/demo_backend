@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
-	"time"
 
 	"github.com/MysGate/demo_backend/contracts"
 	"github.com/MysGate/demo_backend/core"
@@ -14,7 +13,6 @@ import (
 	"github.com/MysGate/demo_backend/pubsub"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -25,7 +23,6 @@ import (
 type SrcChainHandler struct {
 	Db              *xorm.Engine
 	PrivKey         *ecdsa.PrivateKey
-	WssClient       *ethclient.Client
 	HttpClient      *ethclient.Client
 	QuitListen      chan bool
 	ContractAddress common.Address
@@ -35,9 +32,8 @@ type SrcChainHandler struct {
 	keys            []string
 }
 
-func NewSrcChainHandler(wssClient *ethclient.Client, httpClient *ethclient.Client, addr common.Address, key *ecdsa.PrivateKey, db *xorm.Engine, disp IDispatcher, keys []string) *SrcChainHandler {
+func NewSrcChainHandler(httpClient *ethclient.Client, addr common.Address, key *ecdsa.PrivateKey, db *xorm.Engine, disp IDispatcher, keys []string) *SrcChainHandler {
 	cch := &SrcChainHandler{
-		WssClient:       wssClient,
 		HttpClient:      httpClient,
 		PrivKey:         key,
 		ContractAddress: addr,
@@ -92,12 +88,138 @@ func (sch *SrcChainHandler) DispatchEvent(v interface{}) {
 			util.Logger().Error(fmt.Sprintf("DispatchEvent parseEvent failed: %+v", vLog))
 			return
 		}
+		// crossfrom
 		sch.disp.PayForDest(order)
-	} else if vLog.Topics[0].Hex() == util.GetCrossFromTopic() {
-		sch.parseCrossFromEvent(vLog)
-	} else if vLog.Topics[0].Hex() == util.GetCommitReceiptTopic() {
-		sch.parseCrossReceiptEvent(vLog)
 	}
+}
+
+// addcommitment
+func (sch *SrcChainHandler) AddCommitment(order *model.Order) (bool, error) {
+	opts, err := util.CreateTransactionOpts(sch.HttpClient, sch.PrivKey, order.SrcChainId, sch.Caller)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("AddCommitment:CreateTransactionOpts err:%+v", err))
+		return false, err
+	}
+
+	instance, err := contracts.NewBridge(sch.BridgeAddress, sch.HttpClient)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("AddCommitment: create instance err:%+v", err))
+		return false, err
+	}
+
+	tx, err := instance.AddCommitment(opts, big.NewInt(order.ID))
+	if err != nil {
+		errMsg := fmt.Sprintf("AddCommitment:instance.AddCommitment err: %+v", err)
+		util.Logger().Error(errMsg)
+		return false, err
+	}
+
+	order.AddCommitmentTxHash = tx.Hash().Hex()
+	receipt, ret, err := util.TxWaitToSync(context.Background(), sch.HttpClient, tx)
+	if err != nil {
+		errMsg := fmt.Sprintf("AddCommitment:TxWaitToSync err: %+v", err)
+		util.Logger().Error(errMsg)
+		return false, err
+	}
+
+	if !ret {
+		errMsg := fmt.Sprintf("AddCommitment:TxWaitToSync failed, tx: %+v", tx)
+		util.Logger().Error(errMsg)
+		return false, err
+	}
+	order.AddCommitmentTxStatus = 1
+
+	for _, log := range receipt.Logs {
+		sch.parseCommitmentAddedEvent(order, log)
+	}
+
+	return true, nil
+}
+
+func (sch *SrcChainHandler) commitReceipt(order *model.Order) (bool, error) {
+	opts, err := util.CreateTransactionOpts(sch.HttpClient, sch.PrivKey, order.SrcChainId, sch.Caller)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("AddCommitment:CreateTransactionOpts err:%+v", err))
+		return false, err
+	}
+
+	instance, err := contracts.NewCrossTransactor(sch.ContractAddress, sch.HttpClient)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("commitReceipt: create instance err:%+v", err))
+		return false, err
+	}
+	contractOrder := &contracts.CrossControllerOrder{
+		OrderId:     big.NewInt(order.ID),
+		SrcChainId:  new(big.Int).SetUint64(order.SrcChainId),
+		SrcAddress:  common.HexToAddress(order.SrcAddress),
+		SrcToken:    common.HexToAddress(order.SrcToken),
+		SrcAmount:   util.ConvertFloat64ToTokenAmount(order.SrcAmount, 18),
+		DestChainId: new(big.Int).SetUint64(order.DestChainId),
+		DestAddress: common.HexToAddress(order.DestAddress),
+		DestToken:   common.HexToAddress(order.DestToken),
+		Porter:      common.HexToAddress(order.PoterId),
+	}
+	orderHash := model.Keccak256EncodePackedContractOrder(contractOrder)
+
+	hash := common.HexToHash(order.DestTxHash)
+	receipt := &contracts.CrossControllerReceipt{}
+	copy(receipt.DestTxHash[:], hash.Bytes())
+	tx, err := instance.CommitReceipt(opts, orderHash, *receipt)
+	if err != nil {
+		errMsg := fmt.Sprintf("commitReceipt:instance.CommitReceipt err: %+v", err)
+		util.Logger().Error(errMsg)
+		return false, err
+	}
+	order.ReceiptTxHash = tx.Hash().Hex()
+	_, ret, err := util.TxWaitToSync(context.Background(), sch.HttpClient, tx)
+	return ret, err
+}
+
+func (sch *SrcChainHandler) commitReceiptWithZk(order *model.Order) (bool, error) {
+	opts, err := util.CreateTransactionOpts(sch.HttpClient, sch.PrivKey, order.SrcChainId, sch.Caller)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("commitReceiptWithZk:CreateTransactionOpts err:%+v", err))
+		return false, err
+	}
+
+	instance, err := contracts.NewCrossTransactor(sch.ContractAddress, sch.HttpClient)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("commitReceiptWithZk: create instance err:%+v", err))
+		return false, err
+	}
+	contractOrder := &contracts.CrossControllerOrder{
+		OrderId:     big.NewInt(order.ID),
+		SrcChainId:  new(big.Int).SetUint64(order.SrcChainId),
+		SrcAddress:  common.HexToAddress(order.SrcAddress),
+		SrcToken:    common.HexToAddress(order.SrcToken),
+		SrcAmount:   util.ConvertFloat64ToTokenAmount(order.SrcAmount, 18),
+		DestChainId: new(big.Int).SetUint64(order.DestChainId),
+		DestAddress: common.HexToAddress(order.DestAddress),
+		DestToken:   common.HexToAddress(order.DestToken),
+		Porter:      common.HexToAddress(order.PoterId),
+	}
+	orderHash := model.Keccak256EncodePackedContractOrder(contractOrder)
+
+	hash := common.HexToHash(order.DestTxHash)
+	receipt := &contracts.CrossControllerReceipt{}
+	copy(receipt.DestTxHash[:], hash.Bytes())
+
+	proof := &contracts.CrossControllerProof{
+		A: order.ZKP.Proof.A,
+		B: order.ZKP.Proof.B,
+		C: order.ZKP.Proof.C,
+	}
+	input := order.ZKP.PublicInfo
+	tx, err := instance.CommitReceiptWithZK(opts, *proof, input, orderHash, receipt.DestTxHash)
+	if err != nil {
+		errMsg := fmt.Sprintf("commitReceipt:instance.CommitReceipt err: %+v", err)
+		util.Logger().Error(errMsg)
+		return false, err
+	}
+
+	order.ReceiptTxHash = tx.Hash().Hex()
+	_, ret, err := util.TxWaitToSync(context.Background(), sch.HttpClient, tx)
+	return ret, err
 }
 
 func (sch *SrcChainHandler) parseCrossToEvent(vLog *types.Log) (*model.Order, bool) {
@@ -137,237 +259,20 @@ func (sch *SrcChainHandler) parseCrossToEvent(vLog *types.Log) (*model.Order, bo
 	return order, true
 }
 
-func (sch *SrcChainHandler) parseCrossFromEvent(vLog *types.Log) bool {
-	contractAbi, err := abi.JSON(strings.NewReader(string(contracts.CrossABI)))
+func (sch *SrcChainHandler) parseCommitmentAddedEvent(order *model.Order, vLog *types.Log) bool {
+	contractAbi, err := abi.JSON(strings.NewReader(string(contracts.BridgeABI)))
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("Not found abi json, err:%+v", err))
 		return false
 	}
 
-	orderFromEvent := &contracts.CrossCrossFrom{}
-	err = contractAbi.UnpackIntoInterface(orderFromEvent, "CrossFrom", vLog.Data)
+	commitmentAddedEvent := contracts.BridgeCommitmentAdded{}
+	err = contractAbi.UnpackIntoInterface(commitmentAddedEvent, "CommitmentAdded", vLog.Data)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("[Order] failed to UnpackIntoInterface: %+v", err))
 		return false
 	}
 
-	order := &model.Order{
-		ID:           orderFromEvent.Order.OrderId.Int64(),
-		DestTxStatus: 1,
-	}
-	model.UpdateOrderStatus(order, sch.Db)
+	order.CommitmentIdx = commitmentAddedEvent.LeafIndex.Uint64()
 	return true
-}
-
-func (sch *SrcChainHandler) parseCrossReceiptEvent(vLog *types.Log) bool {
-	contractAbi, err := abi.JSON(strings.NewReader(string(contracts.CrossABI)))
-	if err != nil {
-		util.Logger().Error(fmt.Sprintf("Not found abi json, err:%+v", err))
-		return false
-	}
-
-	orderReceiptEvent := &contracts.CrossCommitReceipt{}
-	err = contractAbi.UnpackIntoInterface(orderReceiptEvent, "CommitReceipt", vLog.Data)
-	if err != nil {
-		util.Logger().Error(fmt.Sprintf("[Order] failed to UnpackIntoInterface: %+v", err))
-		return false
-	}
-
-	order := &model.Order{
-		ReceiptTxStatus: 1,
-		FinishedTime:    time.Now(),
-	}
-	model.UpdateOrderReceiptStatus(vLog.TxHash.Hex(), order, sch.Db)
-	return true
-}
-
-func (sch *SrcChainHandler) VerifyProof(order *model.Order) (error, bool) {
-	instance, err := contracts.NewBridge(sch.BridgeAddress, sch.HttpClient)
-	if err != nil {
-		util.Logger().Error(fmt.Sprintf("verifyProof: create instance err:%+v", err))
-		return err, false
-	}
-
-	//ToDo convert proof
-	var a [2]*big.Int
-	var b [2][2]*big.Int
-	var c [2]*big.Int
-	var input [2]*big.Int
-	result, err := instance.Verify(&bind.CallOpts{}, a, b, c, input)
-	if err != nil {
-		errMsg := fmt.Sprintf("verifyProof:instance.verify err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err, false
-	}
-
-	return nil, result
-}
-
-func (sch *SrcChainHandler) AddCommitment(order *model.Order) error {
-	nonce, err := sch.HttpClient.PendingNonceAt(context.Background(), sch.Caller)
-	if err != nil {
-		errMsg := fmt.Sprintf("addCommitment:sch.HttpClient.PendingNonceAt err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	gasPrice, err := sch.HttpClient.SuggestGasPrice(context.Background())
-	if err != nil {
-		errMsg := fmt.Sprintf("addCommitment:sch.HttpClient.SuggestGasPrice err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	srcChainID := big.NewInt(int64(order.SrcChainId))
-	opts, err := bind.NewKeyedTransactorWithChainID(sch.PrivKey, srcChainID)
-	if err != nil {
-		errMsg := fmt.Sprintf("addCommitment:NewKeyedTransactorWithChainID err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	opts.Nonce = big.NewInt(int64(nonce))
-	opts.Value = big.NewInt(0) // in wei
-	opts.GasLimit = uint64(0)  // in units
-	opts.GasPrice = gasPrice
-
-	instance, err := contracts.NewBridge(sch.BridgeAddress, sch.HttpClient)
-	if err != nil {
-		util.Logger().Error(fmt.Sprintf("addCommitment: create instance err:%+v", err))
-		return err
-	}
-
-	tx, err := instance.AddCommitment(opts, big.NewInt(order.ID))
-	if err != nil {
-		errMsg := fmt.Sprintf("commitReceipt:instance.CommitReceipt err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	order.ReceiptTxHash = tx.Hash().Hex()
-	return nil
-}
-
-func (sch *SrcChainHandler) commitReceipt(order *model.Order) error {
-	nonce, err := sch.HttpClient.PendingNonceAt(context.Background(), sch.Caller)
-	if err != nil {
-		errMsg := fmt.Sprintf("commitReceipt:sch.HttpClient.PendingNonceAt err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	gasPrice, err := sch.HttpClient.SuggestGasPrice(context.Background())
-	if err != nil {
-		errMsg := fmt.Sprintf("commitReceipt:sch.HttpClient.SuggestGasPrice err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	srcChainID := big.NewInt(int64(order.SrcChainId))
-	opts, err := bind.NewKeyedTransactorWithChainID(sch.PrivKey, srcChainID)
-	if err != nil {
-		errMsg := fmt.Sprintf("commitReceipt:NewKeyedTransactorWithChainID err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	opts.Nonce = big.NewInt(int64(nonce))
-	opts.Value = big.NewInt(0) // in wei
-	opts.GasLimit = uint64(0)  // in units
-	opts.GasPrice = gasPrice
-
-	instance, err := contracts.NewCrossTransactor(sch.ContractAddress, sch.HttpClient)
-	if err != nil {
-		util.Logger().Error(fmt.Sprintf("commitReceipt: create instance err:%+v", err))
-		return err
-	}
-	contractOrder := &contracts.CrossControllerOrder{
-		OrderId:     big.NewInt(order.ID),
-		SrcChainId:  new(big.Int).SetUint64(order.SrcChainId),
-		SrcAddress:  common.HexToAddress(order.SrcAddress),
-		SrcToken:    common.HexToAddress(order.SrcToken),
-		SrcAmount:   util.ConvertFloat64ToTokenAmount(order.SrcAmount, 18),
-		DestChainId: new(big.Int).SetUint64(order.DestChainId),
-		DestAddress: common.HexToAddress(order.DestAddress),
-		DestToken:   common.HexToAddress(order.DestToken),
-		Porter:      common.HexToAddress(order.PoterId),
-	}
-	orderHash := model.Keccak256EncodePackedContractOrder(contractOrder)
-
-	hash := common.HexToHash(order.DestTxHash)
-	receipt := &contracts.CrossControllerReceipt{}
-	copy(receipt.DestTxHash[:], hash.Bytes())
-	// TODO add proof
-	// receipt.Proof
-	tx, err := instance.CommitReceipt(opts, orderHash, *receipt)
-	if err != nil {
-		errMsg := fmt.Sprintf("commitReceipt:instance.CommitReceipt err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	order.ReceiptTxHash = tx.Hash().Hex()
-	return nil
-}
-
-func (sch *SrcChainHandler) commitReceiptWithZk(order *model.Order) error {
-	nonce, err := sch.HttpClient.PendingNonceAt(context.Background(), sch.Caller)
-	if err != nil {
-		errMsg := fmt.Sprintf("commitReceiptWithZk:sch.HttpClient.PendingNonceAt err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	gasPrice, err := sch.HttpClient.SuggestGasPrice(context.Background())
-	if err != nil {
-		errMsg := fmt.Sprintf("commitReceiptWithZk:sch.HttpClient.SuggestGasPrice err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	srcChainID := big.NewInt(int64(order.SrcChainId))
-	opts, err := bind.NewKeyedTransactorWithChainID(sch.PrivKey, srcChainID)
-	if err != nil {
-		errMsg := fmt.Sprintf("commitReceiptWithZk:NewKeyedTransactorWithChainID err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	opts.Nonce = big.NewInt(int64(nonce))
-	opts.Value = big.NewInt(0) // in wei
-	opts.GasLimit = uint64(0)  // in units
-	opts.GasPrice = gasPrice
-
-	// instance, err := contracts.NewCrossTransactor(sch.ContractAddress, sch.HttpClient)
-	// if err != nil {
-	// 	util.Logger().Error(fmt.Sprintf("commitReceiptWithZk: create instance err:%+v", err))
-	// 	return err
-	// }
-	// contractOrder := &contracts.CrossControllerOrder{
-	// 	OrderId:     big.NewInt(order.ID),
-	// 	SrcChainId:  new(big.Int).SetUint64(order.SrcChainId),
-	// 	SrcAddress:  common.HexToAddress(order.SrcAddress),
-	// 	SrcToken:    common.HexToAddress(order.SrcToken),
-	// 	SrcAmount:   util.ConvertFloat64ToTokenAmount(order.SrcAmount, 18),
-	// 	DestChainId: new(big.Int).SetUint64(order.DestChainId),
-	// 	DestAddress: common.HexToAddress(order.DestAddress),
-	// 	DestToken:   common.HexToAddress(order.DestToken),
-	// 	Porter:      common.HexToAddress(order.PoterId),
-	// }
-	// orderHash := model.Keccak256EncodePackedContractOrder(contractOrder)
-
-	// hash := common.HexToHash(order.DestTxHash)
-	// receipt := &contracts.CrossControllerReceipt{}
-	// copy(receipt.DestTxHash[:], hash.Bytes())
-	// // TODO add proof
-	// // receipt.Proof
-	// tx, err := instance.commitReceiptWithZk(opts, orderHash, *receipt)
-	// if err != nil {
-	// 	errMsg := fmt.Sprintf("commitReceipt:instance.CommitReceipt err: %+v", err)
-	// 	util.Logger().Error(errMsg)
-	// 	return err
-	// }
-
-	// order.ReceiptTxHash = tx.Hash().Hex()
-	return nil
 }

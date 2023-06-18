@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -34,9 +35,9 @@ func GetHTTPClient() *http.Client {
 	return netClient
 }
 
-// HTTPGet ..
-func HTTPGet(method string, url string, httpClient *http.Client) (body []byte, err error) {
-	req, err := http.NewRequest(method, url, nil)
+// HTTPReq ..
+func HTTPReq(method string, url string, httpClient *http.Client, content []byte) (body []byte, err error) {
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(content))
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		err = fmt.Errorf("HTTP get failed. err = %v, url = %s", err, url)
