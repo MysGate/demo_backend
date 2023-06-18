@@ -20,15 +20,13 @@ type DestChainHandler struct {
 	ContractAddress common.Address
 	PrivKey         *ecdsa.PrivateKey
 	Caller          common.Address
-	Rpc             string
 }
 
-func NewDestChainHandler(client *ethclient.Client, addr common.Address, key *ecdsa.PrivateKey, url string) *DestChainHandler {
+func NewDestChainHandler(client *ethclient.Client, addr common.Address, key *ecdsa.PrivateKey) *DestChainHandler {
 	dch := &DestChainHandler{
 		HttpClient:      client,
 		ContractAddress: addr,
 		PrivKey:         key,
-		Rpc:             url,
 	}
 
 	publicKey := key.Public()

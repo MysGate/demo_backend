@@ -119,17 +119,22 @@ func (cm *ChainManager) handleGenerateZkproof(order *model.Order) error {
 			return errors.New(errMsg)
 		}
 
-		dch := cm.findDestHandler(order.SrcChainId, order.DestChainId)
-		if dch == nil {
-			errMsg := "handleGenerateZkproof:findDestHandler nil"
+		sch := cm.findSrcHandler(order.SrcChainId)
+		if sch == nil {
+			errMsg := "handleGenerateZkproof:findSrcHandler nil"
 			util.Logger().Error(errMsg)
 			return errors.New(errMsg)
 		}
 
+		zkVerifier, err := sch.getZkVerifier()
+		if err == nil {
+			util.Logger().Error(fmt.Sprintf("handleGenerateZkproof:getZkVerifier err:%+v", err))
+			return err
+		}
+
 		req := &model.ProofReq{
-			// TODO Read from contract
-			Addr:   "",
-			Url:    dch.Rpc,
+			Addr:   zkVerifier.Hex(),
+			Url:    sch.Rpc,
 			TxHash: order.DestTxHash,
 			CmtIdx: int(order.CommitmentIdx),
 		}
