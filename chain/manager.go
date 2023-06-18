@@ -12,7 +12,6 @@ import (
 )
 
 type Connection struct {
-	WssClient  *ethclient.Client
 	HttpClient *ethclient.Client
 }
 
@@ -52,12 +51,11 @@ func (cm *ChainManager) createEthClient(rpc string) *ethclient.Client {
 	return conn
 }
 
-func (cm *ChainManager) initEthClient(chanid uint64, wss, http string) *Connection {
+func (cm *ChainManager) initEthClient(chanid uint64, http string) *Connection {
 	conn, ok := cm.clients[chanid]
 	if !ok || conn == nil {
 		co := &Connection{
 			HttpClient: cm.createEthClient(http),
-			WssClient:  cm.createEthClient(wss),
 		}
 		cm.clients[chanid] = co
 		return co
@@ -65,10 +63,6 @@ func (cm *ChainManager) initEthClient(chanid uint64, wss, http string) *Connecti
 
 	if conn.HttpClient == nil {
 		conn.HttpClient = cm.createEthClient(http)
-	}
-
-	if conn.WssClient == nil {
-		conn.WssClient = cm.createEthClient(wss)
 	}
 
 	return conn
@@ -82,9 +76,9 @@ func (cm *ChainManager) start() {
 			continue
 		}
 
-		conn := cm.initEthClient(cc.ChainID, cc.WssRpcUrl, cc.HttpRpcUrl)
+		conn := cm.initEthClient(cc.ChainID, cc.HttpRpcUrl)
 		keys := cm.cfg.GetChainKey(cc)
-		cch := NewSrcChainHandler(conn.WssClient, conn.HttpClient, cc.ContractAddr, cc.Key, cm.db, cm, keys)
+		cch := NewSrcChainHandler(conn.HttpClient, cc.ContractAddr, cc.Key, cm.db, cm, keys)
 		if _, ok := cm.handlers[cc.ChainID]; !ok {
 			ch := &ChainHandler{
 				src:  cch,
@@ -100,8 +94,8 @@ func (cm *ChainManager) start() {
 				continue
 			}
 
-			conn := cm.initEthClient(cd.ChainID, cd.WssRpcUrl, cd.HttpRpcUrl)
-			ccd := NewDestChainHandler(conn.HttpClient, cd.ContractAddr, cd.Key)
+			conn := cm.initEthClient(cd.ChainID, cd.HttpRpcUrl)
+			ccd := NewDestChainHandler(conn.HttpClient, cd.ContractAddr, cd.Key, cd.HttpRpcUrl)
 			cm.handlers[cc.ChainID].dest[cd.ChainID] = ccd
 		}
 
@@ -120,7 +114,6 @@ func (cm *ChainManager) CloseChainManager() {
 	}
 
 	for _, conn := range cm.clients {
-		conn.WssClient.Close()
 		conn.HttpClient.Close()
 	}
 

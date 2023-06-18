@@ -45,6 +45,10 @@ type Order struct {
 	DestTxHash   string  `xorm:"dest_tx_hash" json:"dest_tx_hash"`
 	DestTxStatus int     `xorm:"dest_tx_status" json:"dest_tx_status"`
 
+	CommitmentIdx         uint64 `xorm:"commitment_idx" json:"commitment_idx"`
+	AddCommitmentTxHash   string `xorm:"addcommitment_tx" json:"addcommitment_tx"`
+	AddCommitmentTxStatus int    `xorm:"addcommitment_tx_status" json:"addcommitment_tx_status"`
+
 	Proof           string `xorm:"proof" json:"proof"`
 	RawProof        string `xorm:"raw_proof" json:"raw_proof"`
 	ReceiptTxHash   string `xorm:"receipt_tx_hash" json:"receipt_tx_hash"`
@@ -55,6 +59,9 @@ type Order struct {
 	Updated      time.Time `xorm:"updated" json:"updated"`
 
 	Status int `xorm:"status" json:"status"`
+
+	RZKP *RawZkProof
+	ZKP  *ZkProof
 }
 
 func (o *Order) TableName() string {
