@@ -947,6 +947,11 @@ contract CrossController is PausableUpgradeable {
         bytes32 indexed orderHash,
         Receipt receipt
     );
+    event CommitReceiptWithZk(
+        address indexed validator,
+        bytes32 indexed orderHash,
+        Receipt receipt
+    );
     event SettedFloatFee(uint256 floatFee);
     event SettedPorterFactory(address _factory);
     event SettedZkVerifier(address _zkVerifier);
@@ -1004,8 +1009,8 @@ contract CrossController is PausableUpgradeable {
     }
 
     function crossTo(Order calldata order) external {
-        require(order.srcAddress == msg.sender, "");
-        require(order.srcChainId == currentChainId, "");
+        require(order.srcAddress == msg.sender, "src address is wrong");
+        require(order.srcChainId == currentChainId, "src chainid is wrong");
         bytes32 orderHash = keccak256(
             abi.encodePacked(
                 order.orderId,
@@ -1019,9 +1024,9 @@ contract CrossController is PausableUpgradeable {
                 order.porter
             )
         );
-        require(orderHashes[order.orderId] == bytes32(0), "");
+        require(orderHashes[order.orderId] == bytes32(0), "order is not exist");
         address porterPool = IPorterFactory(porterFactory).getPorterPool(order.porter);
-        require(porterPool != address(0), "");
+        require(porterPool != address(0), "porter pool is null");
 
         orders[orderHash] = order;
         orderHashes[order.orderId] = orderHash;
@@ -1053,7 +1058,7 @@ contract CrossController is PausableUpgradeable {
         uint8 srcTokenDecimals,
         uint256 crossAmount
     ) external onlyOwner {
-        require(order.destChainId == currentChainId, "");
+        require(order.destChainId == currentChainId, "destChainId is wrong");
         bytes32 orderHash = keccak256(
             abi.encodePacked(
                 order.orderId,
@@ -1067,9 +1072,9 @@ contract CrossController is PausableUpgradeable {
                 order.porter
             )
         );
-        require(!paidOrders[orderHash], "");
+        require(!paidOrders[orderHash], "order is pending");
         address porterPool = IPorterFactory(porterFactory).getPorterPool(order.porter);
-        require(porterPool != address(0), "");
+        require(porterPool != address(0), "porter pool is null");
 
         paidOrders[orderHash] = true;
 
@@ -1095,10 +1100,10 @@ contract CrossController is PausableUpgradeable {
         bytes32 orderHash,
         Receipt calldata receipt
     ) external onlyOwner {
-        require(pendingOrders[orderHash], "");
+        require(pendingOrders[orderHash], "order is pending");
         Order memory order = orders[orderHash];
         address porterPool = IPorterFactory(porterFactory).getPorterPool(order.porter);
-        require(porterPool != address(0), "");
+        require(porterPool != address(0), "porter pool is null");
 
         pendingOrders[orderHash] = false;
         receipts[orderHash] = receipt;
@@ -1122,14 +1127,13 @@ contract CrossController is PausableUpgradeable {
         bytes32 orderHash,
         bytes32 destTxHash
     ) external onlyOwner {
-        require(enable, "");
-        require(zkVerifier != address(0), "");
-        require(pendingOrders[orderHash], "");
+        require(enable, "not support zk verify");
+        require(zkVerifier != address(0), "zk verifier is null");
+        require(pendingOrders[orderHash], "order is pending");
         Order memory order = orders[orderHash];
         address porterPool = IPorterFactory(porterFactory).getPorterPool(order.porter);
-        require(porterPool != address(0), "");
+        require(porterPool != address(0), "porter pool is null");
         
-
         pendingOrders[orderHash] = false;
         require(IBridgeVerifier(zkVerifier).verify(proof.a, proof.b, proof.c, input), "");
         
@@ -1158,7 +1162,7 @@ contract CrossController is PausableUpgradeable {
             order.srcAmount
         );
 
-        emit CommitReceipt(msg.sender, orderHash, receipt);
+        emit CommitReceiptWithZk(msg.sender, orderHash, receipt);
     }
     
     function addCommitment(uint256 _commitment) external onlyOwner {
@@ -1166,21 +1170,21 @@ contract CrossController is PausableUpgradeable {
     }
     
     function setFloatFee(uint256 _floatFee) external onlyOwner {
-        require(_floatFee <= 10000, "");
+        require(_floatFee <= 10000, "float fee should lower than 10000");
         floatFee = _floatFee;
 
         emit SettedFloatFee(_floatFee);
     }
 
     function setPorterFactory(address _factory) external onlyOwner {
-        require(_factory != address(0), "");
+        require(_factory != address(0), "porter factory address is null");
         porterFactory = _factory;
 
         emit SettedPorterFactory(_factory);
     }
 
     function setZkVerifier(address _verifier) external onlyOwner {
-        require(_verifier != address(0), "");
+        require(_verifier != address(0), "zk verifier is null");
         zkVerifier = _verifier;
 
         emit SettedZkVerifier(_verifier);

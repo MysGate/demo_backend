@@ -31,7 +31,7 @@ var (
 
 // BridgeMetaData contains all meta data concerning the Bridge contract.
 var BridgeMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_mimc\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_controller\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"leafIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"CommitmentAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"LeafAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256[8]\",\"name\":\"\",\"type\":\"uint256[8]\"},{\"indexed\":false,\"internalType\":\"uint256[8]\",\"name\":\"\",\"type\":\"uint256[8]\"}],\"name\":\"MerkleProof\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"TestPoseidon\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"MT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"cur\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_commitment\",\"type\":\"uint256\"}],\"name\":\"addCommitment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"commitments\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"controller\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"j\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"k\",\"type\":\"uint256\"}],\"name\":\"getLeaf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"root\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getMerkleProof\",\"outputs\":[{\"internalType\":\"uint256[8]\",\"name\":\"\",\"type\":\"uint256[8]\"},{\"internalType\":\"uint256[8]\",\"name\":\"\",\"type\":\"uint256[8]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"input\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"sk\",\"type\":\"uint256\"}],\"name\":\"getPoseidon\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRoot\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"root\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"leaf\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"depth\",\"type\":\"uint256\"}],\"name\":\"getUniqueLeaf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"com\",\"type\":\"uint256\"}],\"name\":\"insert\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_root\",\"type\":\"uint256\"}],\"name\":\"isKnownRoot\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"no_leaves\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"roots\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"serials\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"tree_depth\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"updateTree\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"root\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[2]\",\"name\":\"a\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2][2]\",\"name\":\"b\",\"type\":\"uint256[2][2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"c\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"input\",\"type\":\"uint256[2]\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[2]\",\"name\":\"a\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2][2]\",\"name\":\"b\",\"type\":\"uint256[2][2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"c\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"input\",\"type\":\"uint256[2]\"}],\"name\":\"verifyProof\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"r\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_mimc\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_controller\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"commitment\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"leafIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"CommitmentAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"LeafAdded\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"MT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"cur\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_commitment\",\"type\":\"uint256\"}],\"name\":\"addCommitment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"commitments\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"controller\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"j\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"k\",\"type\":\"uint256\"}],\"name\":\"getLeaf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"root\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getMerkleProof\",\"outputs\":[{\"internalType\":\"uint256[8]\",\"name\":\"\",\"type\":\"uint256[8]\"},{\"internalType\":\"uint256[8]\",\"name\":\"\",\"type\":\"uint256[8]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getNextCommitmentIdx\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"cur\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"input\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"sk\",\"type\":\"uint256\"}],\"name\":\"getPoseidon\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getRoot\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"root\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"leaf\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"depth\",\"type\":\"uint256\"}],\"name\":\"getUniqueLeaf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"com\",\"type\":\"uint256\"}],\"name\":\"insert\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_root\",\"type\":\"uint256\"}],\"name\":\"isKnownRoot\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"no_leaves\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"roots\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"serials\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"tree_depth\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"updateTree\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"root\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[2]\",\"name\":\"a\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2][2]\",\"name\":\"b\",\"type\":\"uint256[2][2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"c\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"input\",\"type\":\"uint256[2]\"}],\"name\":\"verify\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256[2]\",\"name\":\"a\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2][2]\",\"name\":\"b\",\"type\":\"uint256[2][2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"c\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"input\",\"type\":\"uint256[2]\"}],\"name\":\"verifyProof\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"r\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // BridgeABI is the input ABI used to generate the binding from.
@@ -304,6 +304,100 @@ func (_Bridge *BridgeCallerSession) GetLeaf(j *big.Int, k *big.Int) (*big.Int, e
 	return _Bridge.Contract.GetLeaf(&_Bridge.CallOpts, j, k)
 }
 
+// GetMerkleProof is a free data retrieval call binding the contract method 0xc41dd397.
+//
+// Solidity: function getMerkleProof(uint256 index) view returns(uint256[8], uint256[8])
+func (_Bridge *BridgeCaller) GetMerkleProof(opts *bind.CallOpts, index *big.Int) ([8]*big.Int, [8]*big.Int, error) {
+	var out []interface{}
+	err := _Bridge.contract.Call(opts, &out, "getMerkleProof", index)
+
+	if err != nil {
+		return *new([8]*big.Int), *new([8]*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([8]*big.Int)).(*[8]*big.Int)
+	out1 := *abi.ConvertType(out[1], new([8]*big.Int)).(*[8]*big.Int)
+
+	return out0, out1, err
+
+}
+
+// GetMerkleProof is a free data retrieval call binding the contract method 0xc41dd397.
+//
+// Solidity: function getMerkleProof(uint256 index) view returns(uint256[8], uint256[8])
+func (_Bridge *BridgeSession) GetMerkleProof(index *big.Int) ([8]*big.Int, [8]*big.Int, error) {
+	return _Bridge.Contract.GetMerkleProof(&_Bridge.CallOpts, index)
+}
+
+// GetMerkleProof is a free data retrieval call binding the contract method 0xc41dd397.
+//
+// Solidity: function getMerkleProof(uint256 index) view returns(uint256[8], uint256[8])
+func (_Bridge *BridgeCallerSession) GetMerkleProof(index *big.Int) ([8]*big.Int, [8]*big.Int, error) {
+	return _Bridge.Contract.GetMerkleProof(&_Bridge.CallOpts, index)
+}
+
+// GetNextCommitmentIdx is a free data retrieval call binding the contract method 0xf9a541d6.
+//
+// Solidity: function getNextCommitmentIdx() view returns(uint256 cur)
+func (_Bridge *BridgeCaller) GetNextCommitmentIdx(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Bridge.contract.Call(opts, &out, "getNextCommitmentIdx")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetNextCommitmentIdx is a free data retrieval call binding the contract method 0xf9a541d6.
+//
+// Solidity: function getNextCommitmentIdx() view returns(uint256 cur)
+func (_Bridge *BridgeSession) GetNextCommitmentIdx() (*big.Int, error) {
+	return _Bridge.Contract.GetNextCommitmentIdx(&_Bridge.CallOpts)
+}
+
+// GetNextCommitmentIdx is a free data retrieval call binding the contract method 0xf9a541d6.
+//
+// Solidity: function getNextCommitmentIdx() view returns(uint256 cur)
+func (_Bridge *BridgeCallerSession) GetNextCommitmentIdx() (*big.Int, error) {
+	return _Bridge.Contract.GetNextCommitmentIdx(&_Bridge.CallOpts)
+}
+
+// GetPoseidon is a free data retrieval call binding the contract method 0xf662db24.
+//
+// Solidity: function getPoseidon(uint256 input, uint256 sk) view returns(uint256)
+func (_Bridge *BridgeCaller) GetPoseidon(opts *bind.CallOpts, input *big.Int, sk *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _Bridge.contract.Call(opts, &out, "getPoseidon", input, sk)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetPoseidon is a free data retrieval call binding the contract method 0xf662db24.
+//
+// Solidity: function getPoseidon(uint256 input, uint256 sk) view returns(uint256)
+func (_Bridge *BridgeSession) GetPoseidon(input *big.Int, sk *big.Int) (*big.Int, error) {
+	return _Bridge.Contract.GetPoseidon(&_Bridge.CallOpts, input, sk)
+}
+
+// GetPoseidon is a free data retrieval call binding the contract method 0xf662db24.
+//
+// Solidity: function getPoseidon(uint256 input, uint256 sk) view returns(uint256)
+func (_Bridge *BridgeCallerSession) GetPoseidon(input *big.Int, sk *big.Int) (*big.Int, error) {
+	return _Bridge.Contract.GetPoseidon(&_Bridge.CallOpts, input, sk)
+}
+
 // GetRoot is a free data retrieval call binding the contract method 0x5ca1e165.
 //
 // Solidity: function getRoot() view returns(uint256 root)
@@ -333,6 +427,37 @@ func (_Bridge *BridgeSession) GetRoot() (*big.Int, error) {
 // Solidity: function getRoot() view returns(uint256 root)
 func (_Bridge *BridgeCallerSession) GetRoot() (*big.Int, error) {
 	return _Bridge.Contract.GetRoot(&_Bridge.CallOpts)
+}
+
+// GetUniqueLeaf is a free data retrieval call binding the contract method 0x4d556bed.
+//
+// Solidity: function getUniqueLeaf(uint256 leaf, uint256 depth) view returns(uint256)
+func (_Bridge *BridgeCaller) GetUniqueLeaf(opts *bind.CallOpts, leaf *big.Int, depth *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _Bridge.contract.Call(opts, &out, "getUniqueLeaf", leaf, depth)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetUniqueLeaf is a free data retrieval call binding the contract method 0x4d556bed.
+//
+// Solidity: function getUniqueLeaf(uint256 leaf, uint256 depth) view returns(uint256)
+func (_Bridge *BridgeSession) GetUniqueLeaf(leaf *big.Int, depth *big.Int) (*big.Int, error) {
+	return _Bridge.Contract.GetUniqueLeaf(&_Bridge.CallOpts, leaf, depth)
+}
+
+// GetUniqueLeaf is a free data retrieval call binding the contract method 0x4d556bed.
+//
+// Solidity: function getUniqueLeaf(uint256 leaf, uint256 depth) view returns(uint256)
+func (_Bridge *BridgeCallerSession) GetUniqueLeaf(leaf *big.Int, depth *big.Int) (*big.Int, error) {
+	return _Bridge.Contract.GetUniqueLeaf(&_Bridge.CallOpts, leaf, depth)
 }
 
 // IsKnownRoot is a free data retrieval call binding the contract method 0xa6232a93.
@@ -571,69 +696,6 @@ func (_Bridge *BridgeSession) AddCommitment(_commitment *big.Int) (*types.Transa
 // Solidity: function addCommitment(uint256 _commitment) returns()
 func (_Bridge *BridgeTransactorSession) AddCommitment(_commitment *big.Int) (*types.Transaction, error) {
 	return _Bridge.Contract.AddCommitment(&_Bridge.TransactOpts, _commitment)
-}
-
-// GetMerkleProof is a paid mutator transaction binding the contract method 0xc41dd397.
-//
-// Solidity: function getMerkleProof(uint256 index) returns(uint256[8], uint256[8])
-func (_Bridge *BridgeTransactor) GetMerkleProof(opts *bind.TransactOpts, index *big.Int) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "getMerkleProof", index)
-}
-
-// GetMerkleProof is a paid mutator transaction binding the contract method 0xc41dd397.
-//
-// Solidity: function getMerkleProof(uint256 index) returns(uint256[8], uint256[8])
-func (_Bridge *BridgeSession) GetMerkleProof(index *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.GetMerkleProof(&_Bridge.TransactOpts, index)
-}
-
-// GetMerkleProof is a paid mutator transaction binding the contract method 0xc41dd397.
-//
-// Solidity: function getMerkleProof(uint256 index) returns(uint256[8], uint256[8])
-func (_Bridge *BridgeTransactorSession) GetMerkleProof(index *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.GetMerkleProof(&_Bridge.TransactOpts, index)
-}
-
-// GetPoseidon is a paid mutator transaction binding the contract method 0xf662db24.
-//
-// Solidity: function getPoseidon(uint256 input, uint256 sk) returns(uint256)
-func (_Bridge *BridgeTransactor) GetPoseidon(opts *bind.TransactOpts, input *big.Int, sk *big.Int) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "getPoseidon", input, sk)
-}
-
-// GetPoseidon is a paid mutator transaction binding the contract method 0xf662db24.
-//
-// Solidity: function getPoseidon(uint256 input, uint256 sk) returns(uint256)
-func (_Bridge *BridgeSession) GetPoseidon(input *big.Int, sk *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.GetPoseidon(&_Bridge.TransactOpts, input, sk)
-}
-
-// GetPoseidon is a paid mutator transaction binding the contract method 0xf662db24.
-//
-// Solidity: function getPoseidon(uint256 input, uint256 sk) returns(uint256)
-func (_Bridge *BridgeTransactorSession) GetPoseidon(input *big.Int, sk *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.GetPoseidon(&_Bridge.TransactOpts, input, sk)
-}
-
-// GetUniqueLeaf is a paid mutator transaction binding the contract method 0x4d556bed.
-//
-// Solidity: function getUniqueLeaf(uint256 leaf, uint256 depth) returns(uint256)
-func (_Bridge *BridgeTransactor) GetUniqueLeaf(opts *bind.TransactOpts, leaf *big.Int, depth *big.Int) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "getUniqueLeaf", leaf, depth)
-}
-
-// GetUniqueLeaf is a paid mutator transaction binding the contract method 0x4d556bed.
-//
-// Solidity: function getUniqueLeaf(uint256 leaf, uint256 depth) returns(uint256)
-func (_Bridge *BridgeSession) GetUniqueLeaf(leaf *big.Int, depth *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.GetUniqueLeaf(&_Bridge.TransactOpts, leaf, depth)
-}
-
-// GetUniqueLeaf is a paid mutator transaction binding the contract method 0x4d556bed.
-//
-// Solidity: function getUniqueLeaf(uint256 leaf, uint256 depth) returns(uint256)
-func (_Bridge *BridgeTransactorSession) GetUniqueLeaf(leaf *big.Int, depth *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.GetUniqueLeaf(&_Bridge.TransactOpts, leaf, depth)
 }
 
 // Insert is a paid mutator transaction binding the contract method 0x90b5561d.
@@ -952,275 +1014,6 @@ func (_Bridge *BridgeFilterer) WatchLeafAdded(opts *bind.WatchOpts, sink chan<- 
 func (_Bridge *BridgeFilterer) ParseLeafAdded(log types.Log) (*BridgeLeafAdded, error) {
 	event := new(BridgeLeafAdded)
 	if err := _Bridge.contract.UnpackLog(event, "LeafAdded", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// BridgeMerkleProofIterator is returned from FilterMerkleProof and is used to iterate over the raw logs and unpacked data for MerkleProof events raised by the Bridge contract.
-type BridgeMerkleProofIterator struct {
-	Event *BridgeMerkleProof // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *BridgeMerkleProofIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(BridgeMerkleProof)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(BridgeMerkleProof)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *BridgeMerkleProofIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *BridgeMerkleProofIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// BridgeMerkleProof represents a MerkleProof event raised by the Bridge contract.
-type BridgeMerkleProof struct {
-	Arg0 [8]*big.Int
-	Arg1 [8]*big.Int
-	Raw  types.Log // Blockchain specific contextual infos
-}
-
-// FilterMerkleProof is a free log retrieval operation binding the contract event 0xb32f3ab38e24247edb1bf988fa9b37c62ef392f712e2ec5537057af901fef39c.
-//
-// Solidity: event MerkleProof(uint256[8] arg0, uint256[8] arg1)
-func (_Bridge *BridgeFilterer) FilterMerkleProof(opts *bind.FilterOpts) (*BridgeMerkleProofIterator, error) {
-
-	logs, sub, err := _Bridge.contract.FilterLogs(opts, "MerkleProof")
-	if err != nil {
-		return nil, err
-	}
-	return &BridgeMerkleProofIterator{contract: _Bridge.contract, event: "MerkleProof", logs: logs, sub: sub}, nil
-}
-
-// WatchMerkleProof is a free log subscription operation binding the contract event 0xb32f3ab38e24247edb1bf988fa9b37c62ef392f712e2ec5537057af901fef39c.
-//
-// Solidity: event MerkleProof(uint256[8] arg0, uint256[8] arg1)
-func (_Bridge *BridgeFilterer) WatchMerkleProof(opts *bind.WatchOpts, sink chan<- *BridgeMerkleProof) (event.Subscription, error) {
-
-	logs, sub, err := _Bridge.contract.WatchLogs(opts, "MerkleProof")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(BridgeMerkleProof)
-				if err := _Bridge.contract.UnpackLog(event, "MerkleProof", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseMerkleProof is a log parse operation binding the contract event 0xb32f3ab38e24247edb1bf988fa9b37c62ef392f712e2ec5537057af901fef39c.
-//
-// Solidity: event MerkleProof(uint256[8] arg0, uint256[8] arg1)
-func (_Bridge *BridgeFilterer) ParseMerkleProof(log types.Log) (*BridgeMerkleProof, error) {
-	event := new(BridgeMerkleProof)
-	if err := _Bridge.contract.UnpackLog(event, "MerkleProof", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// BridgeTestPoseidonIterator is returned from FilterTestPoseidon and is used to iterate over the raw logs and unpacked data for TestPoseidon events raised by the Bridge contract.
-type BridgeTestPoseidonIterator struct {
-	Event *BridgeTestPoseidon // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *BridgeTestPoseidonIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(BridgeTestPoseidon)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(BridgeTestPoseidon)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *BridgeTestPoseidonIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *BridgeTestPoseidonIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// BridgeTestPoseidon represents a TestPoseidon event raised by the Bridge contract.
-type BridgeTestPoseidon struct {
-	Arg0 *big.Int
-	Raw  types.Log // Blockchain specific contextual infos
-}
-
-// FilterTestPoseidon is a free log retrieval operation binding the contract event 0x69926f033119e1c2805af57f0eeb01b0a45d04fbfeb858105bc89dc4b6bc1ca8.
-//
-// Solidity: event TestPoseidon(uint256 arg0)
-func (_Bridge *BridgeFilterer) FilterTestPoseidon(opts *bind.FilterOpts) (*BridgeTestPoseidonIterator, error) {
-
-	logs, sub, err := _Bridge.contract.FilterLogs(opts, "TestPoseidon")
-	if err != nil {
-		return nil, err
-	}
-	return &BridgeTestPoseidonIterator{contract: _Bridge.contract, event: "TestPoseidon", logs: logs, sub: sub}, nil
-}
-
-// WatchTestPoseidon is a free log subscription operation binding the contract event 0x69926f033119e1c2805af57f0eeb01b0a45d04fbfeb858105bc89dc4b6bc1ca8.
-//
-// Solidity: event TestPoseidon(uint256 arg0)
-func (_Bridge *BridgeFilterer) WatchTestPoseidon(opts *bind.WatchOpts, sink chan<- *BridgeTestPoseidon) (event.Subscription, error) {
-
-	logs, sub, err := _Bridge.contract.WatchLogs(opts, "TestPoseidon")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(BridgeTestPoseidon)
-				if err := _Bridge.contract.UnpackLog(event, "TestPoseidon", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseTestPoseidon is a log parse operation binding the contract event 0x69926f033119e1c2805af57f0eeb01b0a45d04fbfeb858105bc89dc4b6bc1ca8.
-//
-// Solidity: event TestPoseidon(uint256 arg0)
-func (_Bridge *BridgeFilterer) ParseTestPoseidon(log types.Log) (*BridgeTestPoseidon, error) {
-	event := new(BridgeTestPoseidon)
-	if err := _Bridge.contract.UnpackLog(event, "TestPoseidon", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
