@@ -25,3 +25,4 @@ test/
 *.sql
 demo_backend
 .DS_Store
+local.yml

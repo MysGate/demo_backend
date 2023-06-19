@@ -115,8 +115,10 @@ func (sch *SrcChainHandler) AddCommitment(order *model.Order) (bool, error) {
 		return false, err
 	}
 
-	order.AddCommitmentTxHash = tx.Hash().Hex()
 	receipt, ret, err := util.TxWaitToSync(context.Background(), sch.HttpClient, tx)
+
+	model.UpdateOrderStatus(&model.Order{ID: order.ID, AddCommitmentTxHash: tx.Hash().Hex()}, sch.Db)
+
 	if err != nil {
 		errMsg := fmt.Sprintf("AddCommitment:TxWaitToSync err: %+v", err)
 		util.Logger().Error(errMsg)
@@ -128,7 +130,6 @@ func (sch *SrcChainHandler) AddCommitment(order *model.Order) (bool, error) {
 		util.Logger().Error(errMsg)
 		return false, err
 	}
-	order.AddCommitmentTxStatus = 1
 
 	for _, log := range receipt.Logs {
 		sch.parseCommitmentAddedEvent(order, log)

@@ -7,7 +7,6 @@ import (
 	"math/big"
 
 	"github.com/MysGate/demo_backend/contracts"
-	"github.com/MysGate/demo_backend/core"
 	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum/common"
@@ -74,7 +73,6 @@ func (dest *DestChainHandler) crossFrom(order *model.Order) (bool, error) {
 	}
 
 	order.DestTxHash = tx.Hash().Hex()
-	order.Status = core.CrossFrom
 
 	_, ret, err := util.TxWaitToSync(context.Background(), dest.HttpClient, tx)
 	return ret, err

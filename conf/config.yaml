@@ -16,8 +16,8 @@ chains:
     chain_id: 280
     wss_rpc_url: "wss://testnet.era.zksync.dev/ws"
     http_rpc_url: "https://testnet.era.zksync.dev"
-    contract_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
-    bridge_address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+    contract_address: "0xEbc1e4Df0fE0790fccD2a6615D9510C913F684B1"
+    bridge_address: "0x02c27f0861d4e9FC400992C4554B80e4Ac2bDBAc"
     private_key: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     support_coins:
       - "usdt"

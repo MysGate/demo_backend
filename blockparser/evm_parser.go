@@ -88,6 +88,9 @@ func (p *Parser) parseImpl() {
 		if minFromBlock.Cmp(fromBlock) > 0 {
 			fromBlock = minFromBlock
 		}
+		if fromBlock.Cmp(header.Number) > 0 {
+			return
+		}
 		query := ethereum.FilterQuery{
 			FromBlock: fromBlock,
 			ToBlock:   header.Number,
@@ -97,7 +100,7 @@ func (p *Parser) parseImpl() {
 		}
 		logs, err := p.client.FilterLogs(context.Background(), query)
 		if err != nil {
-			util.Logger().Error(fmt.Sprintf("chainId %d failed to GetEthLogs: %v", chanId, err))
+			util.Logger().Error(fmt.Sprintf("chainId %d fromBlock  %d toBlock %d failed to GetEthLogs: %v", chanId, query.FromBlock.Int64(), query.ToBlock.Int64(), err))
 			return
 		}
 		// 2: broastcastLog

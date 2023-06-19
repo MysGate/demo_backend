@@ -65,7 +65,7 @@ func (cm *ChainManager) handlePayForDest(order *model.Order) error {
 		return err
 	}
 
-	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, DestTxHash: order.DestTxHash, DestTxStatus: 1}, cm.db)
+	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, DestTxHash: order.DestTxHash, DestTxStatus: 1, Status: core.CrossFrom}, cm.db)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("handlePayForDest update db err:%+v", err))
 		return err
@@ -77,18 +77,11 @@ func (cm *ChainManager) handlePayForDest(order *model.Order) error {
 }
 
 func (cm *ChainManager) handleAddCommitment(order *model.Order) error {
-	err := model.UpdateOrderStatus(&model.Order{ID: order.ID, Status: core.AddCommitment}, cm.db)
-	if err != nil {
-		util.Logger().Error(fmt.Sprintf("handleAddCommitment update db err:%+v", err))
-		return err
-	}
-
 	srcHandler := cm.findSrcHandler(order.SrcChainId)
 	if srcHandler == nil {
 		errMsg := "handleAddCommitment findSrcHandler nil"
-		err = errors.New(errMsg)
 		util.Logger().Error(errMsg)
-		return err
+		return errors.New("handleAddCommitment findSrcHandler nil")
 	}
 
 	ret, err := srcHandler.AddCommitment(order)
@@ -99,8 +92,13 @@ func (cm *ChainManager) handleAddCommitment(order *model.Order) error {
 	}
 
 	if !ret {
-		errMsg := fmt.Sprintf("handleAddCommitment addCommitment trx failed, tx:", order.AddCommitmentTxHash)
+		errMsg := fmt.Sprintf("handleAddCommitment addCommitment trx failed, tx:%s", order.AddCommitmentTxHash)
 		util.Logger().Error(errMsg)
+		return err
+	}
+	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, AddCommitmentTxStatus: 1, Status: core.AddCommitment}, cm.db)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("handleAddCommitment update db err:%+v", err))
 		return err
 	}
 
@@ -194,7 +192,7 @@ func (cm *ChainManager) handleCommitReceipt(order *model.Order) error {
 		return err
 	}
 
-	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, ReceiptTxHash: order.ReceiptTxHash, Status: core.CommitReceipt}, cm.db)
+	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, ReceiptTxHash: order.ReceiptTxHash, ReceiptTxStatus: 1, Status: core.CommitReceipt}, cm.db)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("handleCommitReceipt update db err:%+v", err))
 		return err

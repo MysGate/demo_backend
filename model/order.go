@@ -60,8 +60,8 @@ type Order struct {
 
 	Status int `xorm:"status" json:"status"`
 
-	RZKP *RawZkProof
-	ZKP  *ZkProof
+	RZKP *RawZkProof `xorm:"-"`
+	ZKP  *ZkProof    `xorm:"-"`
 }
 
 func (o *Order) TableName() string {
