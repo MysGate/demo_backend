@@ -70,7 +70,10 @@ func (cm *ChainManager) handlePayForDest(order *model.Order) error {
 		util.Logger().Error(fmt.Sprintf("handlePayForDest update db err:%+v", err))
 		return err
 	}
-	return cm.SendMessage(add_commitment, order)
+	if cm.cfg.ZkVerify.Enable {
+		return cm.SendMessage(add_commitment, order)
+	}
+	return cm.SendMessage(commit_receipt, order)
 }
 
 func (cm *ChainManager) handleAddCommitment(order *model.Order) error {
@@ -111,57 +114,55 @@ func (cm *ChainManager) handleGenerateZkproof(order *model.Order) error {
 		return err
 	}
 
-	if cm.cfg.ZkVerify.Enable {
-		pm := zkp.GetProofManager(cm.cfg)
-		if pm == nil {
-			errMsg := "Init ProofManager err"
-			util.Logger().Error(errMsg)
-			return errors.New(errMsg)
-		}
-
-		sch := cm.findSrcHandler(order.SrcChainId)
-		if sch == nil {
-			errMsg := "handleGenerateZkproof:findSrcHandler nil"
-			util.Logger().Error(errMsg)
-			return errors.New(errMsg)
-		}
-
-		zkVerifier, err := sch.getZkVerifier()
-		if err == nil {
-			util.Logger().Error(fmt.Sprintf("handleGenerateZkproof:getZkVerifier err:%+v", err))
-			return err
-		}
-
-		req := &model.ProofReq{
-			Addr:   zkVerifier.Hex(),
-			Url:    sch.Rpc,
-			TxHash: order.DestTxHash,
-			CmtIdx: int(order.CommitmentIdx),
-		}
-		rp, raw := pm.GetZkRawProof(req)
-		if rp == nil || raw == "" {
-			errMsg := "get raw proof err"
-			err = errors.New(errMsg)
-			util.Logger().Error(errMsg)
-			return err
-		}
-
-		order.RZKP = rp
-		order.RawProof = raw
-
-		zp := rp.RawProofToZkProof()
-		if zp == nil {
-			errMsg := "get zkp err"
-			err = errors.New(errMsg)
-			util.Logger().Error(errMsg)
-			return err
-		}
-		order.ZKP = zp
-
-		proofHash := zp.Keccak256EncodePackedZkProof()
-		order.Proof = string(proofHash[:])
-		model.UpdateOrderStatus(&model.Order{ID: order.ID, Proof: order.Proof, RawProof: raw}, cm.db)
+	pm := zkp.GetProofManager(cm.cfg)
+	if pm == nil {
+		errMsg := "Init ProofManager err"
+		util.Logger().Error(errMsg)
+		return errors.New(errMsg)
 	}
+
+	sch := cm.findSrcHandler(order.SrcChainId)
+	if sch == nil {
+		errMsg := "handleGenerateZkproof:findSrcHandler nil"
+		util.Logger().Error(errMsg)
+		return errors.New(errMsg)
+	}
+
+	zkVerifier, err := sch.getZkVerifier()
+	if err == nil {
+		util.Logger().Error(fmt.Sprintf("handleGenerateZkproof:getZkVerifier err:%+v", err))
+		return err
+	}
+
+	req := &model.ProofReq{
+		Addr:   zkVerifier.Hex(),
+		Url:    sch.Rpc,
+		TxHash: order.DestTxHash,
+		CmtIdx: int(order.CommitmentIdx),
+	}
+	rp, raw := pm.GetZkRawProof(req)
+	if rp == nil || raw == "" {
+		errMsg := "get raw proof err"
+		err = errors.New(errMsg)
+		util.Logger().Error(errMsg)
+		return err
+	}
+
+	order.RZKP = rp
+	order.RawProof = raw
+
+	zp := rp.RawProofToZkProof()
+	if zp == nil {
+		errMsg := "get zkp err"
+		err = errors.New(errMsg)
+		util.Logger().Error(errMsg)
+		return err
+	}
+	order.ZKP = zp
+
+	proofHash := zp.Keccak256EncodePackedZkProof()
+	order.Proof = string(proofHash[:])
+	model.UpdateOrderStatus(&model.Order{ID: order.ID, Proof: order.Proof, RawProof: raw}, cm.db)
 
 	return cm.SendMessage(commit_receipt, order)
 }
