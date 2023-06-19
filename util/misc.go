@@ -1,6 +1,9 @@
 package util
 
 import (
+	"context"
+	"crypto/ecdsa"
+	"errors"
 	"fmt"
 	"math"
 	"math/big"
@@ -8,6 +11,10 @@ import (
 
 	"github.com/MysGate/demo_backend/core"
 	"github.com/bwmarrin/snowflake"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/shopspring/decimal"
 )
 
@@ -73,4 +80,65 @@ func GenerateIncreaseID() (int64, error) {
 	id := node.Generate()
 
 	return id.Int64(), nil
+}
+
+func ConvertBigIntFromString(v0, v1 string) (n0 *big.Int, n1 *big.Int, err error) {
+	n0 = new(big.Int)
+	n0, ok := n0.SetString(v0, 10)
+	if !ok {
+		err = errors.New("RawProofToZkProof err")
+		Logger().Error(err.Error())
+		return
+	}
+
+	n1 = new(big.Int)
+	n1, ok = n1.SetString(v1, 10)
+	if !ok {
+		err = errors.New("RawProofToZkProof err")
+		Logger().Error(err.Error())
+		return
+	}
+	return
+}
+
+func CreateTransactionOpts(client *ethclient.Client, key *ecdsa.PrivateKey, chainId uint64, caller common.Address) (opts *bind.TransactOpts, err error) {
+	nonce, err := client.PendingNonceAt(context.Background(), caller)
+	if err != nil {
+		errMsg := fmt.Sprintf("CreateTransactionOpts:client.PendingNonceAt err: %+v", err)
+		Logger().Error(errMsg)
+		return nil, err
+	}
+
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		errMsg := fmt.Sprintf("CreateTransactionOpts:client.SuggestGasPrice err: %+v", err)
+		Logger().Error(errMsg)
+		return nil, err
+	}
+
+	srcChainID := big.NewInt(int64(chainId))
+	opts, err = bind.NewKeyedTransactorWithChainID(key, srcChainID)
+	if err != nil {
+		errMsg := fmt.Sprintf("CreateTransactionOpts:NewKeyedTransactorWithChainID err: %+v", err)
+		Logger().Error(errMsg)
+		return nil, err
+	}
+
+	opts.Nonce = big.NewInt(int64(nonce))
+	opts.Value = big.NewInt(0) // in wei
+	opts.GasLimit = uint64(0)  // in units
+	opts.GasPrice = gasPrice
+
+	return opts, nil
+}
+
+func TxWaitToSync(ctx context.Context, client *ethclient.Client, tx *types.Transaction) (*types.Receipt, bool, error) {
+	receipt, err := bind.WaitMined(context.Background(), client, tx)
+	if err != nil {
+		errMsg := fmt.Sprintf("TxWaitToSync:bind.WaitMine err: %+v", err)
+		Logger().Error(errMsg)
+		return nil, false, err
+	}
+
+	return receipt, receipt.Status == types.ReceiptStatusSuccessful, nil
 }

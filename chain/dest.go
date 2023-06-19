@@ -10,7 +10,6 @@ import (
 	"github.com/MysGate/demo_backend/core"
 	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -43,46 +42,25 @@ func NewDestChainHandler(client *ethclient.Client, addr common.Address, key *ecd
 	return dch
 }
 
-func (dest *DestChainHandler) crossFrom(order *model.Order) error {
-	nonce, err := dest.HttpClient.PendingNonceAt(context.Background(), dest.Caller)
+func (dest *DestChainHandler) crossFrom(order *model.Order) (bool, error) {
+	opts, err := util.CreateTransactionOpts(dest.HttpClient, dest.PrivKey, order.DestChainId, dest.Caller)
 	if err != nil {
-		errMsg := fmt.Sprintf("crossFrom:dest.HttpClient.PendingNonceAt err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
+		util.Logger().Error(fmt.Sprintf("crossFrom:CreateTransactionOpts err:%+v", err))
+		return false, err
 	}
-
-	gasPrice, err := dest.HttpClient.SuggestGasPrice(context.Background())
-	if err != nil {
-		errMsg := fmt.Sprintf("crossFrom:dest.HttpClient.SuggestGasPrice err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	destChainID := big.NewInt(int64(order.DestChainId))
-	opts, err := bind.NewKeyedTransactorWithChainID(dest.PrivKey, destChainID)
-	if err != nil {
-		errMsg := fmt.Sprintf("crossFrom:NewKeyedTransactorWithChainID err: %+v", err)
-		util.Logger().Error(errMsg)
-		return err
-	}
-
-	opts.Nonce = big.NewInt(int64(nonce))
-	opts.Value = big.NewInt(0) // in wei
-	opts.GasLimit = uint64(0)  // in units
-	opts.GasPrice = gasPrice
-
 	instance, err := contracts.NewCrossTransactor(dest.ContractAddress, dest.HttpClient)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("crossFrom: create instance err:%+v", err))
-		return err
+		return false, err
 	}
+
 	o := &contracts.CrossControllerOrder{
 		OrderId:     big.NewInt(order.ID),
 		SrcChainId:  big.NewInt(int64(order.SrcChainId)),
 		SrcAddress:  common.HexToAddress(order.SrcAddress),
 		SrcToken:    common.HexToAddress(order.SrcToken),
 		SrcAmount:   util.ConvertFloat64ToTokenAmount(order.SrcAmount, 18),
-		DestChainId: destChainID,
+		DestChainId: big.NewInt(int64(order.DestChainId)),
 		DestAddress: common.HexToAddress(order.DestAddress),
 		DestToken:   common.HexToAddress(order.DestToken),
 		Porter:      common.HexToAddress(order.PoterId),
@@ -92,10 +70,12 @@ func (dest *DestChainHandler) crossFrom(order *model.Order) error {
 	if err != nil {
 		errMsg := fmt.Sprintf("crossFrom:instance.CrossFrom err: %+v", err)
 		util.Logger().Error(errMsg)
-		return err
+		return false, err
 	}
 
 	order.DestTxHash = tx.Hash().Hex()
 	order.Status = core.CrossFrom
-	return nil
+
+	_, ret, err := util.TxWaitToSync(context.Background(), dest.HttpClient, tx)
+	return ret, err
 }

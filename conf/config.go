@@ -69,6 +69,11 @@ type Router struct {
 	Porters []string `yaml:"porters"`
 }
 
+type ZkVerify struct {
+	Enable   bool   `yaml:"enable"`
+	ProofUrl string `yaml:"proof_url"`
+}
+
 type MysGateConfig struct {
 	SupportChains     map[uint64]*Chain
 	SupportCrossChain map[uint64][]uint64
@@ -85,9 +90,8 @@ type MysGateConfig struct {
 	Service           *Service           `yaml:"service"`
 	Logger            *Log               `yaml:"log"`
 	Debug             bool               `yaml:"debug"`
-	ZkpUrl            string             `yaml:"zkp_url"`
 	MySql             *MySQL             `yaml:"mysql"`
-	VerifyWithZk      bool               `yaml:"verify_with_zk"`
+	ZkVerify          *ZkVerify          `yaml:"zk_verify"`
 }
 
 func GetConfig() *MysGateConfig {

@@ -24,20 +24,27 @@ func GetProofManager(cfg *conf.MysGateConfig) *ProofManager {
 	return pm
 }
 
-func (m *ProofManager) GetZKProof(orderId int64) *model.ZkProof {
-	url := m.Cfg.ZkpUrl
-	hc := util.GetHTTPClient()
-	body, err := util.HTTPGet("POST", url, hc)
+func (m *ProofManager) GetZkRawProof(req *model.ProofReq) (*model.RawZkProof, string) {
+	url := m.Cfg.ZkVerify.ProofUrl
+	content, err := json.Marshal(req)
 	if err != nil {
-		util.Logger().Error(fmt.Sprintf("GetZKProof HTTPGet err:%+v", err))
-		return nil
-	}
-	zkp := &model.ZkProof{}
-	err = json.Unmarshal(body, zkp)
-	if err != nil {
-		util.Logger().Error(fmt.Sprintf("GetZKProof Unmarshal err:%+v", err))
-		return nil
+		util.Logger().Error(fmt.Sprintf("GetZkRawProof HTTPReq err:%+v", err))
+		return nil, ""
 	}
 
-	return zkp
+	hc := util.GetHTTPClient()
+	body, err := util.HTTPReq("POST", url, hc, content)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("GetZkRawProof HTTPReq err:%+v", err))
+		return nil, ""
+	}
+
+	zkp := &model.RawZkProof{}
+	err = json.Unmarshal(body, zkp)
+	if err != nil {
+		util.Logger().Error(fmt.Sprintf("GetZkRawProof Unmarshal err:%+v", err))
+		return nil, ""
+	}
+
+	return zkp, string(body)
 }
