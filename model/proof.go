@@ -52,8 +52,7 @@ func (zp *ZkProof) Keccak256EncodePackedZkProof() (proofHash [32]byte) {
 }
 
 func (rp *RawZkProof) RawProofToZkProof() (zProof *ZkProof) {
-	zProof = &ZkProof{}
-
+	zProof = &ZkProof{Proof: &Proof{}, PublicInfo: [2]*big.Int{}}
 	A0, A1, err := util.ConvertBigIntFromString(rp.Proof.A[0], rp.Proof.A[1])
 	if err != nil {
 		util.Logger().Error(err.Error())
