@@ -11,7 +11,7 @@ GOOS=linux GOARCH=amd64 go build -o demo_backend
 ```bash
 go env -w  GOOS=linux
 go env -w  GOARCH=amd64
-go build -o demo_backe
+go build -o demo_backend
  ```
 
 

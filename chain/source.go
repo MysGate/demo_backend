@@ -132,7 +132,10 @@ func (sch *SrcChainHandler) AddCommitment(order *model.Order) (bool, error) {
 	}
 
 	for _, log := range receipt.Logs {
-		sch.parseCommitmentAddedEvent(order, log)
+		if log.Topics[0].Hex() == util.GetCommitmentAdded() {
+			sch.parseCommitmentAddedEvent(order, log)
+		}
+
 	}
 
 	return true, nil
@@ -230,9 +233,7 @@ func (sch *SrcChainHandler) getZkVerifier() (zkVerifier common.Address, err erro
 		util.Logger().Error(fmt.Sprintf("getZkVerifier: create instance err:%+v", err))
 		return
 	}
-
-	zkVerifier, err = instance.ZkVerifier(nil)
-	return
+	return instance.ZkVerifier(nil)
 }
 
 func (sch *SrcChainHandler) parseCrossToEvent(vLog *types.Log) (*model.Order, bool) {
@@ -279,7 +280,7 @@ func (sch *SrcChainHandler) parseCommitmentAddedEvent(order *model.Order, vLog *
 		return false
 	}
 
-	commitmentAddedEvent := contracts.BridgeCommitmentAdded{}
+	commitmentAddedEvent := &contracts.BridgeCommitmentAdded{}
 	err = contractAbi.UnpackIntoInterface(commitmentAddedEvent, "CommitmentAdded", vLog.Data)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("[Order] failed to UnpackIntoInterface: %+v", err))

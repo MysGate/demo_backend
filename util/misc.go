@@ -127,7 +127,7 @@ func CreateTransactionOpts(client *ethclient.Client, key *ecdsa.PrivateKey, chai
 	opts.Nonce = big.NewInt(int64(nonce))
 	opts.Value = big.NewInt(0) // in wei
 	opts.GasLimit = uint64(0)  // in units
-	opts.GasPrice = gasPrice
+	opts.GasPrice = new(big.Int).Mul(gasPrice, big.NewInt(2))
 
 	return opts, nil
 }

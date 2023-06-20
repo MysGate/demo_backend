@@ -35,7 +35,7 @@ const (
 	orderToTopic            string = "0xeb354ff2ff6b3d6392f3c14565a5e0c60fc642b456cd2538e94968fbc54467e8"
 	orderFromTopic          string = "0x104f0c1d6ebbba9acf834bd5f27d78481d562d83159d076b974d16bca9c66c21"
 	orderCommitReceiptTopic string = "0x581db44feed8ab7f2b0e591fd633c1326a4ba3ea20a5c346ab38fd1f42208e81"
-	CommitmentAddedTopic    string = ""
+	CommitmentAddedTopic    string = "0x65ba9a9f4b62e3d394afcc0ed4b32089839f4dd83f4cfda7e495e09f2cc5657f"
 )
 
 func FindOrderEventTopic(topic string) string {

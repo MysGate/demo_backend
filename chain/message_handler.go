@@ -96,7 +96,7 @@ func (cm *ChainManager) handleAddCommitment(order *model.Order) error {
 		util.Logger().Error(errMsg)
 		return err
 	}
-	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, AddCommitmentTxStatus: 1, Status: core.AddCommitment}, cm.db)
+	err = model.UpdateOrderStatus(&model.Order{ID: order.ID, AddCommitmentTxStatus: 1, Status: core.AddCommitment, CommitmentIdx: order.CommitmentIdx}, cm.db)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("handleAddCommitment update db err:%+v", err))
 		return err
@@ -127,13 +127,15 @@ func (cm *ChainManager) handleGenerateZkproof(order *model.Order) error {
 	}
 
 	zkVerifier, err := sch.getZkVerifier()
-	if err == nil {
+	util.Logger().Info(fmt.Sprintf("zkVerifier:%s", zkVerifier.Hex()))
+	if err != nil {
 		util.Logger().Error(fmt.Sprintf("handleGenerateZkproof:getZkVerifier err:%+v", err))
 		return err
 	}
 
 	req := &model.ProofReq{
-		Addr:   zkVerifier.Hex(),
+		Addr: zkVerifier.Hex(),
+		// Addr:   "0xED6BBe1286FAE2b21152915B0731303F8C6dEd06",
 		Url:    sch.Rpc,
 		TxHash: order.DestTxHash,
 		CmtIdx: int(order.CommitmentIdx),
