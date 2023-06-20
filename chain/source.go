@@ -107,8 +107,8 @@ func (sch *SrcChainHandler) AddCommitment(order *model.Order) (bool, error) {
 		util.Logger().Error(fmt.Sprintf("AddCommitment: create instance err:%+v", err))
 		return false, err
 	}
-
-	tx, err := instance.AddCommitment(opts, big.NewInt(order.ID))
+	commitent := common.HexToHash(order.DestTxHash).Big()
+	tx, err := instance.AddCommitment(opts, commitent)
 	if err != nil {
 		errMsg := fmt.Sprintf("AddCommitment:instance.AddCommitment err: %+v", err)
 		util.Logger().Error(errMsg)
