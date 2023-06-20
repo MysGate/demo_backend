@@ -9,6 +9,7 @@ import (
 	"github.com/MysGate/demo_backend/model"
 	"github.com/MysGate/demo_backend/util"
 	"github.com/MysGate/demo_backend/zkp"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 func (cm *ChainManager) findChainHandler(srcChainId uint64) *ChainHandler {
@@ -161,7 +162,7 @@ func (cm *ChainManager) handleGenerateZkproof(order *model.Order) error {
 	order.ZKP = zp
 
 	proofHash := zp.Keccak256EncodePackedZkProof()
-	order.Proof = string(proofHash[:])
+	order.Proof = common.Bytes2Hex(proofHash[:])
 	model.UpdateOrderStatus(&model.Order{ID: order.ID, Proof: order.Proof, RawProof: raw}, cm.db)
 
 	return cm.SendMessage(commit_receipt, order)
