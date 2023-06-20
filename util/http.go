@@ -36,8 +36,15 @@ func GetHTTPClient() *http.Client {
 }
 
 // HTTPReq ..
-func HTTPReq(method string, url string, httpClient *http.Client, content []byte) (body []byte, err error) {
+func HTTPReq(method string, url string, httpClient *http.Client, content []byte, headers map[string]string) (body []byte, err error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(content))
+
+	if headers != nil {
+		for k, v := range headers {
+			req.Header.Set(k, v)
+		}
+	}
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		err = fmt.Errorf("HTTP get failed. err = %v, url = %s", err, url)
