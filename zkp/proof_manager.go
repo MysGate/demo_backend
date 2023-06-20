@@ -32,8 +32,10 @@ func (m *ProofManager) GetZkRawProof(req *model.ProofReq) (*model.RawZkProof, st
 		return nil, ""
 	}
 
+	headers := make(map[string]string)
+	headers["Content-Type"] = " application/json"
 	hc := util.GetHTTPClient()
-	body, err := util.HTTPReq("POST", url, hc, content)
+	body, err := util.HTTPReq("POST", url, hc, content, headers)
 	if err != nil {
 		util.Logger().Error(fmt.Sprintf("GetZkRawProof HTTPReq err:%+v", err))
 		return nil, ""
