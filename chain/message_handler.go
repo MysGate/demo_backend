@@ -61,7 +61,7 @@ func (cm *ChainManager) handlePayForDest(order *model.Order) error {
 	}
 
 	if !ret {
-		errMsg := fmt.Sprintf("handlePayForDest crossFrom trx failed, tx:", order.DestTxHash)
+		errMsg := fmt.Sprintf("handlePayForDest crossFrom trx failed, tx:%+v", order.DestTxHash)
 		util.Logger().Error(errMsg)
 		return err
 	}
@@ -115,7 +115,7 @@ func (cm *ChainManager) handleGenerateZkproof(order *model.Order) error {
 
 	pm := zkp.GetProofManager(cm.cfg)
 	if pm == nil {
-		errMsg := "Init ProofManager err"
+		errMsg := "handleGenerateZkproof:Init ProofManager err"
 		util.Logger().Error(errMsg)
 		return errors.New(errMsg)
 	}

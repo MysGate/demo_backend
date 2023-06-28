@@ -1,14 +1,18 @@
-package util
+package chain
 
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"testing"
 	"time"
 
 	"github.com/MysGate/demo_backend/contracts"
+	"github.com/MysGate/demo_backend/core"
+	"github.com/MysGate/demo_backend/model"
+	"github.com/MysGate/demo_backend/util"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,94 +23,54 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-var crossContractOwnerKey = ""
+var crossContractOwnerKey = "283398d001e28892198fecb98ae86c38c10c6e64de883e6ffb86359d3f5e7a99"
 var crossContractOwnerAddr = common.HexToAddress("0x24b4F2A3A30fe6e7bB060573D2C7C538BB242C8C")
 
-var bobKey = ""
 var bobAddr = common.HexToAddress("0x327E046E0799b704517dF415d1AfE03bA11021cc")
-var aliceAddr = common.HexToAddress("0x61249E8d708d5A8b0d46673242fBD03D96D94b4F")
 var aliceKey = ""
+var aliceAddr = common.HexToAddress("0x61249E8d708d5A8b0d46673242fBD03D96D94b4F")
 
-var arbContract = common.HexToAddress("0xF15D89a32E62A1e69C5DEa052df5511b298eb404")
+var arbContract = common.HexToAddress("0xfcFe5d2e0842f14290Df274Bfc26FddA76027f2e")
 var arbUsdtAddr = common.HexToAddress("0x1C056c622395cA50c5aC10001C6fFa91B316DfD8")
 var arbPorter = crossContractOwnerAddr
 
-// var arbPorter = crossContractOwnerAddr
-
-var scrollContract = common.HexToAddress("0xEbc1e4Df0fE0790fccD2a6615D9510C913F684B1")
+var scrollContract = common.HexToAddress("0x89Cb7B97593a9D48F28CF5ff88905fA32faa0755")
 var scrollUsdtAddr = common.HexToAddress("0xc6cE82a8670be7c78D56aC46Dc9f557251Cd5465")
 var scrollPorter = crossContractOwnerAddr
-
-// var scrollPorter = crossContractOwnerAddr
 
 var arbChainID = big.NewInt(421613)
 var scrollCHainID = big.NewInt(534353)
 
-var arbRpc = "https://endpoints.omniatech.io/v1/arbitrum/goerli/public"
+var arbRpc = "https://arbitrum-goerli.publicnode.com"
 var scrollRpc = "https://scroll-alphanet.blastapi.io/57226f34-917f-4e5d-84ed-76f527dac6ce"
 
 func ScrollToPay() {
-
-	// aliceAddr := common.HexToAddress("0x61249E8d708d5A8b0d46673242fBD03D96D94b4F")
-	// bobKey := ""
-	//"0xb0184F8c19a31e819e74c0F61b1E3ba9b1ab4634"
-	// scrollPorterPoolAddrKey := "71c0cdcdf4df917b715252066c3e1cca2f81722d367a46eeac4a59ae003e48d4"
-	// arbRpc := "https://arb-goerli.g.alchemy.com/v2/SoAdZnLAhCJgYXNrCprnca8pddcPNqAM"
-	//wss://arb-goerli.g.alchemy.com/v2/SoAdZnLAhCJgYXNrCprnca8pddcPNqAM
-
-	client, err := ethclient.Dial(scrollRpc)
+	opts, client, err := CreateTrxOpts(scrollRpc, crossContractOwnerKey, scrollCHainID, crossContractOwnerAddr)
 	if err != nil {
 		return
 	}
-
-	nonce, err := client.PendingNonceAt(context.Background(), crossContractOwnerAddr)
+	orderId, err := util.GenerateIncreaseID()
 	if err != nil {
 		return
 	}
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		return
-	}
-
-	fmt.Println(gasPrice.String())
-
-	key, err := crypto.HexToECDSA(crossContractOwnerKey)
-	if err != nil {
-		return
-	}
-
-	opts, err := bind.NewKeyedTransactorWithChainID(key, scrollCHainID)
-	if err != nil {
-		return
-	}
-
-	opts.Nonce = big.NewInt(int64(nonce))
-	opts.Value = big.NewInt(0) // in wei
-	// opts.GasLimit = 0          // in units
-	opts.GasLimit = uint64(0)
-	opts.GasPrice = gasPrice
-
-	instance, err := contracts.NewCrossTransactor(scrollContract, client)
-	if err != nil {
-		return
-	}
-	orderId := int64(1685690886)
 	fmt.Println("scroll orderId: ", orderId)
 	o := &contracts.CrossControllerOrder{
 		OrderId:     big.NewInt(orderId),
 		SrcChainId:  arbChainID,
 		SrcAddress:  crossContractOwnerAddr,
 		SrcToken:    arbUsdtAddr,
-		SrcAmount:   ConvertFloat64ToTokenAmount(30, 18),
+		SrcAmount:   util.ConvertFloat64ToTokenAmount(30, 18),
 		DestChainId: scrollCHainID,
 		DestAddress: bobAddr,
 		DestToken:   scrollUsdtAddr,
 		Porter:      scrollPorter,
 	}
-	destAmount := ConvertFloat64ToTokenAmount(10, 18)
-	// destAmount := big.NewInt(1)
+	destAmount := util.ConvertFloat64ToTokenAmount(10, 18)
 	fmt.Println("scroll destAmount: ", destAmount)
+	instance, err := contracts.NewCrossTransactor(scrollContract, client)
+	if err != nil {
+		return
+	}
 	tx, err := instance.CrossFrom(opts, *o, 18, destAmount)
 	if err != nil {
 		fmt.Println(err)
@@ -115,121 +79,17 @@ func ScrollToPay() {
 	fmt.Println(tx.Hash().Hex())
 }
 
-func ArbsToScroll() {
-	// arbRpc := "https://arb-goerli.g.alchemy.com/v2/SoAdZnLAhCJgYXNrCprnca8pddcPNqAM"
-	//wss://arb-goerli.g.alchemy.com/v2/SoAdZnLAhCJgYXNrCprnca8pddcPNqAM
-
-	client, err := ethclient.Dial(arbRpc)
-	if err != nil {
-		return
-	}
-
-	nonce, err := client.PendingNonceAt(context.Background(), aliceAddr)
-	if err != nil {
-		return
-	}
-	fmt.Println("alic nonce: ", nonce)
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		return
-	}
-	//101680000
-	//3235990000
-	// gasPrice := big.NewInt(3235990000)
-	fmt.Println("gasPrice: ", gasPrice)
-
-	key, err := crypto.HexToECDSA(aliceKey)
-	if err != nil {
-		return
-	}
-
-	opts, err := bind.NewKeyedTransactorWithChainID(key, arbChainID)
-	if err != nil {
-		return
-	}
-
-	opts.Nonce = big.NewInt(int64(nonce))
-	opts.Value = big.NewInt(0) // in wei
-	opts.GasLimit = uint64(0)  // in units
-	opts.GasPrice = gasPrice
-
-	orderId := time.Now().Unix()
-	fmt.Println("arb orderId: ", orderId)
-	o := &contracts.CrossControllerOrder{
-		OrderId:    big.NewInt(int64(orderId)),
-		SrcChainId: arbChainID,
-		SrcAddress: aliceAddr,
-		SrcToken:   arbUsdtAddr,
-		SrcAmount:  ConvertFloat64ToTokenAmount(30, 18),
-
-		DestChainId: scrollCHainID,
-		DestAddress: bobAddr,
-		DestToken:   scrollUsdtAddr,
-		Porter:      arbPorter,
-	}
-	fmt.Println(o)
-
-	GetGasLimit(arbRpc, aliceAddr, arbContract, o)
-
-	instance, err := contracts.NewCrossTransactor(arbContract, client)
-	if err != nil {
-		return
-	}
-	tx, err := instance.CrossTo(opts, *o)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println("arb tx: ", tx.Hash().Hex())
-
-}
-
 func ArbToCommit() {
-
-	// aliceKey := ""
-	// arbRpc := "https://arb-goerli.g.alchemy.com/v2/SoAdZnLAhCJgYXNrCprnca8pddcPNqAM"
-	//wss://arb-goerli.g.alchemy.com/v2/SoAdZnLAhCJgYXNrCprnca8pddcPNqAM
-
-	client, err := ethclient.Dial(arbRpc)
+	opts, client, err := CreateTrxOpts(arbRpc, crossContractOwnerKey, arbChainID, crossContractOwnerAddr)
 	if err != nil {
 		return
 	}
-
-	nonce, err := client.PendingNonceAt(context.Background(), crossContractOwnerAddr)
-	if err != nil {
-		return
+	c := &contracts.CrossControllerReceipt{
+		DestTxHash: common.HexToHash("0x8803fbc06b9b6ae484a4a29ba579f81fb47f5d878a59aa89721391fc2d7bdc25"),
 	}
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		return
-	}
-	// gasPrice := big.NewInt(3235990000)
-
-	key, err := crypto.HexToECDSA(crossContractOwnerKey)
-	if err != nil {
-		return
-	}
-
-	opts, err := bind.NewKeyedTransactorWithChainID(key, arbChainID)
-	if err != nil {
-		return
-	}
-
-	opts.Nonce = big.NewInt(int64(nonce))
-	opts.Value = big.NewInt(0) // in wei
-	opts.GasLimit = uint64(0)  // in units
-	opts.GasPrice = gasPrice
-
 	instance, err := contracts.NewCross(arbContract, client)
 	if err != nil {
 		return
-	}
-
-	c := &contracts.CrossControllerReceipt{
-		// Proof:      common.HexToHash("success"),
-		DestTxHash: common.HexToHash("0x8803fbc06b9b6ae484a4a29ba579f81fb47f5d878a59aa89721391fc2d7bdc25"),
 	}
 	tx, err := instance.CommitReceipt(opts, common.HexToHash("0xac09027dbe785a0a5f35bc4974fb79e811e7ada552260bf0f7164f330a88e408"), *c)
 	if err != nil {
@@ -289,7 +149,6 @@ func Approve(rpc string, tokenAddres common.Address, spenderAddress common.Addre
 
 	fmt.Println("data: ", common.Bytes2Hex(data))
 
-	// gasLimit := uint64(0)
 	gasLimit, err := client.EstimateGas(context.Background(), ethereum.CallMsg{
 		From:  fromAddress,
 		To:    &tokenAddres,
@@ -332,11 +191,10 @@ func Approve(rpc string, tokenAddres common.Address, spenderAddress common.Addre
 		if receipt.Status == 1 {
 			break
 		} else {
-			fmt.Sprintln("receipt.Status:%d ", receipt.Status)
+			fmt.Println("receipt.Status:", receipt.Status)
 			break
 		}
 	}
-
 }
 
 func GetGasLimit(rpc string, fromAddress common.Address, toAddress common.Address, o *contracts.CrossControllerOrder) uint64 {
@@ -365,20 +223,6 @@ func GetGasLimit(rpc string, fromAddress common.Address, toAddress common.Addres
 	methodID := hash.Sum(nil)[:4]
 	fmt.Println(hexutil.Encode(methodID)) // 0xdef66322
 
-	// orderId := time.Now().Unix()
-	// o := &contracts.CrossControllerOrder{
-	// 	OrderId:    big.NewInt(int64(orderId)),
-	// 	SrcChainId: arbChainID,
-	// 	SrcAddress: fromAddress,
-	// 	SrcToken:   arbUsdtAddr,
-	// 	SrcAmount:  ConvertFloat64ToTokenAmount(30, 18),
-
-	// 	DestChainId: scrollCHainID,
-	// 	DestAddress: bobAddr,
-	// 	DestToken:   scrollUsdtAddr,
-	// 	PorterPool:  arbPorterPoolAddr,
-	// }
-
 	var data []byte
 	data = append(data, methodID...)
 	data = append(data, common.LeftPadBytes(o.OrderId.Bytes(), 32)...)
@@ -405,9 +249,154 @@ func GetGasLimit(rpc string, fromAddress common.Address, toAddress common.Addres
 	return gasLimit
 }
 
-func cross_test(t *testing.T) {
-	// Approve(arbRpc, arbUsdtAddr, arbContract)
-	ArbsToScroll()
+func CreateTrxOpts(rpc string, keyStr string, chainId *big.Int, caller common.Address) (opts *bind.TransactOpts, client *ethclient.Client, err error) {
+	client, err = ethclient.Dial(rpc)
+	if err != nil {
+		return nil, nil, err
+	}
+	key, err := crypto.HexToECDSA(keyStr)
+	if err != nil {
+		return nil, nil, err
+	}
+	nonce, err := client.PendingNonceAt(context.Background(), caller)
+	if err != nil {
+		errMsg := fmt.Sprintf("CreateTransactionOpts:client.PendingNonceAt err: %+v", err)
+		util.Logger().Error(errMsg)
+		return nil, nil, err
+	}
+
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		errMsg := fmt.Sprintf("CreateTransactionOpts:client.SuggestGasPrice err: %+v", err)
+		util.Logger().Error(errMsg)
+		return nil, nil, err
+	}
+
+	opts, err = bind.NewKeyedTransactorWithChainID(key, chainId)
+	if err != nil {
+		errMsg := fmt.Sprintf("CreateTransactionOpts:NewKeyedTransactorWithChainID err: %+v", err)
+		util.Logger().Error(errMsg)
+		return nil, nil, err
+	}
+
+	opts.Nonce = big.NewInt(int64(nonce))
+	opts.Value = big.NewInt(0) // in wei
+	opts.GasLimit = uint64(0)  // in units
+	opts.GasPrice = new(big.Int).Mul(gasPrice, big.NewInt(2))
+
+	return opts, client, nil
+}
+
+type JSONData struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Order   model.Order `json:"data"`
+}
+
+func getOrder(orderid string) *model.Order {
+	d := &JSONData{}
+	url := fmt.Sprintf("http://demoapi.mysgate.xyz/order/search?orderid=%s", orderid)
+	headers := make(map[string]string)
+	headers["Content-Type"] = " application/json"
+	content := []byte("")
+	hc := util.GetHTTPClient()
+	body, err := util.HTTPReq("GET", url, hc, content, headers)
+	if err != nil {
+		return &d.Order
+	}
+
+	err = json.Unmarshal(body, &d)
+	if err != nil {
+		return &d.Order
+	}
+
+	return &d.Order
+}
+
+func printOrder(o *model.Order) {
+	fmt.Println("OrderSucceed, order detail:#################")
+	fmt.Println("OrderID: ", o.ID)
+	fmt.Println("SrcChainId: ", o.SrcChainId)
+	fmt.Println("SrcAddress: ", o.SrcAddress)
+	fmt.Println("SrcToken: ", o.SrcToken)
+	fmt.Println("SrcAmount: ", o.SrcAmount)
+	fmt.Println("SrcTxHash: ", o.SrcTxHash)
+	fmt.Println("DestAmount: ", o.DestAmount)
+	fmt.Println("DestChain: ", o.DestChainId)
+	fmt.Println("DestAddress: ", o.DestAddress)
+	fmt.Println("DestToken: ", o.DestToken)
+	fmt.Println("DestTxHash: ", o.DestTxHash)
+	fmt.Println("ZkProof: ", o.Proof)
+	fmt.Println("Stats: ", o.Status)
+	fmt.Println("FinishTime: ", o.FinishedTime)
+	fmt.Println("#############################################")
+}
+
+func ArbsToScroll(amount float64) {
+	opts, client, err := CreateTrxOpts(arbRpc, aliceKey, arbChainID, aliceAddr)
+	if err != nil {
+		return
+	}
+	orderId, err := util.GenerateIncreaseID()
+	if err != nil {
+		return
+	}
+	fmt.Println("arb orderId: ", orderId)
+	o := &contracts.CrossControllerOrder{
+		OrderId:     big.NewInt(orderId),
+		SrcChainId:  arbChainID,
+		SrcAddress:  aliceAddr,
+		SrcToken:    arbUsdtAddr,
+		SrcAmount:   util.ConvertFloat64ToTokenAmount(amount, 18),
+		DestChainId: scrollCHainID,
+		DestAddress: bobAddr,
+		DestToken:   scrollUsdtAddr,
+		Porter:      arbPorter,
+	}
+	instance, err := contracts.NewCrossTransactor(arbContract, client)
+	if err != nil {
+		return
+	}
+	tx, err := instance.CrossTo(opts, *o)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("arb crossTo tx: ", tx.Hash().Hex())
+	_, _, err = util.TxWaitToSync(context.Background(), client, tx)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	ticker := time.NewTicker(1 * time.Second)
+	for range ticker.C {
+		order := getOrder(o.OrderId.String())
+		switch order.Status {
+		case int(core.CrossTo):
+			fmt.Println("Source chain transaction!")
+		case int(core.CrossFrom):
+			fmt.Println("Destination chain transaction!")
+		case int(core.AddCommitment):
+			fmt.Println("Add Commitment for gen Merkel tree!")
+		case int(core.Generate):
+			fmt.Println("Generate ZK Proof!")
+		case int(core.CommitReceipt):
+			fmt.Println("CommitReceipt!")
+		case int(core.Success):
+			fmt.Println("Order Success!")
+			printOrder(order)
+			ticker.Stop()
+			return
+		default:
+			fmt.Println("err status")
+		}
+	}
+}
+
+func Test_cross_bridge(t *testing.T) {
+	Approve(arbRpc, arbUsdtAddr, arbContract)
+	ArbsToScroll(101)
 	// ScrollToPay()
 	// ArbToCommit()
 	// GetGasLimit()
